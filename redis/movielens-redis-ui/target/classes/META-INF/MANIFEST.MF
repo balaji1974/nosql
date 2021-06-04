@@ -1,6 +1,0 @@
-Manifest-Version: 1.0
-Built-By: balaji
-Build-Jdk: 11.0.8
-Main-Class: com.bala.nosql.redis.Main
-Created-By: Maven Integration for Eclipse
-
