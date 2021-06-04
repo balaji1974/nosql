@@ -10,14 +10,26 @@ Data structures - Keys, Strings, Hashes, List, Set, SortedSet, HyperLog, Geo, Pu
 Download Redis -> docker pull redis    
 Connect to Redis -> Open the CLI from docker desktop after starting the redis container and type the following command:      
 redis-cli (or)    
-redis-cli -h host -p port -a password (if host is different, port is different and password is set)    
+redis-cli -h host -p port -a password (if host is different, port is different and password is set)   
+or from docker image start redis in a docker container using command    
+docker run -p 6379:6379 redis    
 
 ## movielens-redis-ui 
 Upload the files in the dataset using the commands given in the run-bulk-uploader-command.sh file into redis     
 We have used the Jedis java client to upload data into redis    
+As specired in the commands after the upload start the application using java -jar target/movielens-redis-ui-1.0-SNAPSHOT.jar     
+
+## Spring boot redis sample using jedis (spring-boot-sample)   
+The configuration package is the starting point which defines all the configruation needed for connection to the redis server.     
+We also have defned an entity (key for redis) and the jpa respository class for our JPA opertations.    
+We have a RedisOperations class which does sample opertations on redis.    
+
+## Spring boot cache using redis (spring-boot-cache)
+The configuration package is the starting point which defines all the configruation needed for the redis cache    
+Two custom cache with timeout have been defined that can be tested out    
 
 
-
+ 
 ## Redis Command Reference 
 ```xml
 Redis command reference: https://redis.io/commands
@@ -215,8 +227,12 @@ GET foos
 ```
 
 References: 
-https://www.udemy.com/course/sql-nosql-big-data-hadoop/
-https://redis.io/commands
+https://www.udemy.com/course/sql-nosql-big-data-hadoop/    
+https://redis.io/commands    
+https://www.baeldung.com/spring-data-redis-tutorial    
+https://www.baeldung.com/spring-boot-redis-cache    
+
+
 
 
 
