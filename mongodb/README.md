@@ -56,3 +56,10 @@ In pom.xml add the following dependencies:
 ```
 Create an Entity, a repository interface that extends MongoRepository and start using the repository for all the basic operations just like any regular Spring Data JPA / RDBMS samples.   
 
+
+References:   
+https://spring.io/guides/gs/accessing-data-mongodb/    
+
+
+
+
