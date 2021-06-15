@@ -15,7 +15,7 @@ Installation of MongoDB - docker pull mongo
 Connect client to MongoDB - Use MongoDB Compass   
 
 show dbs -> used for listing all the databases available    
-use test -> will switch to the test database and will create one if this does not exist. It will not show up until we add collection to this db. 
+use test -> will switch to the test database and will create one if this does not exist. It will not show up until we add collection to this db.   
 db -> will display the current database   
 
 ```xml
