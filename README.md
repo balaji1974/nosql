@@ -22,3 +22,5 @@ Modern DBs want to be somewhere in-between the above 2 ends
 
 ## Key-Value store - Redis (check the redis folder)
 
+## Document Oriented Database - MongoDB (check the mongodb folder)
+
