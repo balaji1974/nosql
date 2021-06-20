@@ -10,15 +10,53 @@ Shards can be replicated (master-slave strategy) -> Multiple copies of the shard
 Documents are RDBMS equivalant of a record within the table   
 For storing documents more than 16M (mongodb limit) in size we need to use MongoDb's GridFS
 
-## Commands
-Installation of MongoDB - docker pull mongo  
+## Features of MongoDB
+Multi-document ACID transactions   
+Type conversions   
+The improved shard balancer   
+The aggregation pipeline builder    
+MongoDB Charts (beta)    
+
+## Installing mongodb by 3 different ways on MAC 
+1. Direct download of binary and install it   
+2. brew install mongodb 
+3. Docker container install  (my favourite) - [ docker run -it -p 27017:27017 --name mymongodb -d mongo:latest  ]
+
+## Commad to enter the mongo shell using docker 
+docker exec -it mymongodb mongo   
 Connect client to MongoDB - Use MongoDB Compass   
 
 show dbs -> used for listing all the databases available    
 use test -> will switch to the test database and will create one if this does not exist. It will not show up until we add collection to this db.   
 db -> will display the current database   
 
+
 ### Tables are Collections and Rows are Documents in MongoDB 
+
+### Important elements of mongo config file (mongo.config)
+```xml
+bind_ip = 127.0.0.1
+port = 27017
+quiet = true
+dbpath=D:\mongodb\data\db
+logpath=D:\mongodb\log\mongo.log
+logappend = true
+diaglog=3
+journal = true
+```
+
+
+### Step by Step - Commands 
+```xml
+use students -> this will create a db called  students and will switch the db to this database
+db.users.insertOne({"name":"Balaji", "rollno":42, "status":"present"}) -> This will insert one record in the users collection 
+db.users.find() -> This will display all the records of the collection users 
+show collections -> This will display all the collections in the current database 
+
+```
+
+
+
 
 ```xml
 This will create a collection called clicks that will hold a maximum of 200 documents 
