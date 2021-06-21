@@ -24,14 +24,8 @@ MongoDB Charts (beta)
 
 ## Commad to enter the mongo shell using docker 
 docker exec -it mymongodb mongo   
-Connect client to MongoDB - Use MongoDB Compass   
+or Connect client to MongoDB - Use MongoDB Compass   
 
-show dbs -> used for listing all the databases available    
-use test -> will switch to the test database and will create one if this does not exist. It will not show up until we add collection to this db.   
-db -> will display the current database   
-
-
-### Tables are Collections and Rows are Documents in MongoDB 
 
 ### Important elements of mongo config file (mongo.config)
 ```xml
@@ -45,13 +39,37 @@ diaglog=3
 journal = true
 ```
 
+### Tables are Collections and Rows are Documents in MongoDB 
 
-### Step by Step - Commands 
+## Step by Step - Commands 
 ```xml
-use students -> this will create a db called  students and will switch the db to this database
-db.users.insertOne({"name":"Balaji", "rollno":42, "status":"present"}) -> This will insert one record in the users collection 
-db.users.find() -> This will display all the records of the collection users 
-show collections -> This will display all the collections in the current database 
+show dbs -> used for listing all the databases available   
+show collections -> This will display all the collections in the current database     
+db -> will display the current database 
+
+use students -> this will create a db called students and will switch context to this database
+```
+
+### Insert 
+```xml
+db.students.insertOne({name:"Balaji", rollno:14, status:"present"}) -> This will insert one document into the collection 'students' 
+db.students.insertMany([{name:"Havisha", rollno:15, status:"present"}, {name:"Haasya", rollno:16, status:"absent"}]) -> This will insert more than one document into the collection
+```
+
+### Find
+```xml
+db.students.find() -> This will read all the documents in the collection
+db.students.find().pretty() -> this will display all documents in the collection in a pretty format 
+db.students.find({"status":"present", rollno:14}) -> This is a find documents with filter condition 
+db.students.find({rollno:{$gte:15}}) -> This will find documents with filter condition of greater than or equal to ($gte) - for other criterias use the following $lte, $lt, $gt
+```
+
+### Update 
+```xml
+db.students.updateOne({"rollno":15},{$set:{"name":"Havisha Balaji"}}) -> This will update the document name to Havisha Balaji where rollno is 15 (only the first match would be updated)
+db.students.updateMany({"rollno":{$gte:15}},{$set:{"status":"Present Y"}}) -> This will update more than one document in the collection if the match is found
+db.students.updateMany({"rollno":{$gte:10}},{$set:{"game":"Cricket"}}) -> This will add one more new column to the document in the collection if the match is found
+
 
 ```
 
@@ -332,8 +350,7 @@ Create an Entity, a repository interface that extends MongoRepository and start 
 
 References:   
 https://spring.io/guides/gs/accessing-data-mongodb/    
-https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline/     
-https://docs.mongodb.com/manual/reference/operator/aggregation/    
+https://docs.mongodb.com/manual/reference   
 
 
 
