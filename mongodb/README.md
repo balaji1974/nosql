@@ -69,10 +69,11 @@ db.students.find({rollno:{$gte:15}}) -> This will find documents with filter con
 db.students.updateOne({"rollno":15},{$set:{"name":"Havisha Balaji"}}) -> This will update the document name to Havisha Balaji where rollno is 15 (only the first match would be updated)
 db.students.updateMany({"rollno":{$gte:15}},{$set:{"status":"Present Y"}}) -> This will update more than one document in the collection if the match is found
 db.students.updateMany({"rollno":{$gte:10}},{$set:{"game":"Cricket"}}) -> This will add one more new column to the document in the collection if the match is found
-
-
 ```
 
+### Delete
+db.students.deleteOne({"rollno":15}) -> This will detele the document where the rollno is 15
+db.students.updateMany({"rollno":{$gte:15}}) -> This will delete all documents that have roll no. greater or equal to 15 
 
 
 
