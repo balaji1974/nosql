@@ -56,7 +56,7 @@ db.createCollection('students', {
     max : 5000,
     autoIndexId:true
 }); -> This will create a capped collection called students that will hold a maximum of 5000 documents and will rewrite once this limit has been reached 
-db.studenta.drop() -> This will drop the collection named students
+db.students.drop() -> This will drop the collection named students
 ```
 
 ### Insert 
@@ -73,7 +73,9 @@ db.students.insertMany([{name:"Havisha", rollno:15, status:"present"}, {name:"Ha
 db.students.find() -> This will read all the documents in the collection
 db.students.find().pretty() -> this will display all documents in the collection in a pretty format 
 db.students.find({"status":"present", rollno:14}) -> This is a find documents with filter condition 
-db.students.find({rollno:{$gte:15}}) -> This will find documents with filter condition of greater than or equal to ($gte) - for other criterias use the following $lte, $lt, $gt
+db.students.find({rollno:{$gte:15}}) -> This will find documents with filter condition of greater than or equal to ($gte) - for other criterias use the following $lte, $lt, $gt, $eq, $ne, $in, $nin, $exists
+db.students.find({"rollno":14},{name:1, _id:0}) -> This will find all documents with rollno=14 and will display only the name field from the document 
+db.students.find({},{name:0}) -> This will display all documents in the collection but will not display the name field 
 ```
 
 ### Update 
@@ -90,14 +92,16 @@ db.students.findAndModify({query:{name:"Balaji"}, update:{$inc:{rollno:3}}}) -> 
 
 ### Delete (will return boolen ack along with count)
 ```xml
-db.students.deleteOne({"rollno":15}) -> This will detele the document where the rollno is 15
+db.students.deleteOne({"rollno":15}) -> This will detele the first matching document where the rollno is 15
 db.students.updateMany({"rollno":{$gte:15}}) -> This will delete all documents that have roll no. greater or equal to 15
 ```
 
 ### Remove (will return count of removed documents)
 ```xml
+db.students.remove({"rollno":15}) -> This will detele the document where the rollno is 15
+db.students.remove({"rollno":15}, 1) -> This will delete the first document where the rollno is 15
 db.students.remove({rollno:{$gt:15}}) -> This will remove all documents that have age greater than 15 
-db.students.remove() -> Will remove all documents in the collection
+db.students.remove({}) -> This will remove all documents from the collection
 ```
 
 ### Renaming a collection
