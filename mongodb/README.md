@@ -43,16 +43,28 @@ journal = true
 
 ## Step by Step - Commands 
 ```xml
-show dbs -> used for listing all the databases available   
-show collections -> This will display all the collections in the current database     
+show dbs -> used for listing all the databases available 
 db -> will display the current database 
+use myrecords -> this will create a reference to database called myrecords. Actual database is created only when we create collections in it 
+db.dropDatabase() -> This will drop the current database we are in 
 
-use students -> this will create a db called students and will switch context to this database
+show collections -> This will display all the collections in the current database 
+db.createCollection('students') -> this will create a new collection called students
+db.createCollection('students', {
+    capped : true, 
+    size : 2000000, 
+    max : 5000,
+    autoIndexId:true
+}); -> This will create a capped collection called students that will hold a maximum of 5000 documents and will rewrite once this limit has been reached 
+db.studenta.drop() -> This will drop the collection named students
 ```
 
 ### Insert 
 ```xml
-db.students.insertOne({name:"Balaji", rollno:14, status:"present"}) -> This will insert one document into the collection 'students' 
+db.students.insert({name:"Balaji", rollno:14, status:"present"}) -> This will insert one document into the collection and return the count of inserted records
+db.students.insert({_id: 1, name:"Thiagarajan", rollno:1, status:"present"}) -> This will insert document with our own id, will throw write errror if the id exist 
+db.students.insert([{name:"Havisha", rollno:2, status:"present"}, {name:"Haasya", rollno:3, status:"absent"}]) -> This is a bulk insert of more than one document
+db.students.insertOne({name:"Balaji", rollno:14, status:"present"}) -> This will insert one document into the collection 'students' and will return a boolean of status and also the unique key of inserted record 
 db.students.insertMany([{name:"Havisha", rollno:15, status:"present"}, {name:"Haasya", rollno:16, status:"absent"}]) -> This will insert more than one document into the collection
 ```
 
@@ -82,21 +94,21 @@ db.students.deleteOne({"rollno":15}) -> This will detele the document where the 
 db.students.updateMany({"rollno":{$gte:15}}) -> This will delete all documents that have roll no. greater or equal to 15
 ```
 
-### Remove (will return count of removed records)
+### Remove (will return count of removed documents)
 ```xml
 db.students.remove({rollno:{$gt:15}}) -> This will remove all documents that have age greater than 15 
+db.students.remove() -> Will remove all documents in the collection
+```
 
+### Renaming a collection
+```xml
+db.students.renameCollection("student") -> This will rename a collection 
 ```
 
 
-```xml
-This will create a collection called clicks that will hold a maximum of 200 documents 
-db.createCollection('clicks', {
-    capped : true, 
-    size : 2000000, 
-    max : 200
-});
 
+### Other general syntax
+```xml
 //load 200 documents into the collection
 // Here id field is not specified and hence mongodb generates an imutable id field automatically.
 // This id field can be of any data type except arrays 
