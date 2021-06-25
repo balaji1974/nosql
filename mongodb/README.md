@@ -71,10 +71,22 @@ db.students.updateMany({"rollno":{$gte:15}},{$set:{"status":"Present Y"}}) -> Th
 db.students.updateMany({"rollno":{$gte:10}},{$set:{"game":"Cricket"}}) -> This will add one more new column to the document in the collection if the match is found
 ```
 
-### Delete
-db.students.deleteOne({"rollno":15}) -> This will detele the document where the rollno is 15
-db.students.updateMany({"rollno":{$gte:15}}) -> This will delete all documents that have roll no. greater or equal to 15 
+### Find and modify (will return back the found document before the update)
+```xml
+db.students.findAndModify({query:{name:"Balaji"}, update:{$inc:{rollno:3}}}) -> This will find the name-Balaji and increment the rollno by 3 
+```
 
+### Delete (will return boolen ack along with count)
+```xml
+db.students.deleteOne({"rollno":15}) -> This will detele the document where the rollno is 15
+db.students.updateMany({"rollno":{$gte:15}}) -> This will delete all documents that have roll no. greater or equal to 15
+```
+
+### Remove (will return count of removed records)
+```xml
+db.students.remove({rollno:{$gt:15}}) -> This will remove all documents that have age greater than 15 
+
+```
 
 
 ```xml
