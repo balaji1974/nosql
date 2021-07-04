@@ -235,6 +235,12 @@ db.books.insert({
 
 ```
 
+### Users in mongodb
+```xml
+db.getUsers() -> This will list out the users in the current database
+db.createUser({user:"techdata", pwd:"tech", roles:[{role:"userAdmin", db:"students"}]}) -> This will create an user called techdata with password tech and role userAdmin in database students 
+
+```
 
 ### Other general syntax
 ```xml
