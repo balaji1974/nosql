@@ -80,6 +80,7 @@ db.students.find({"status":"present", rollno:14}) -> This is a find documents wi
 db.students.find({rollno:{$gte:15}}) -> This will find documents with filter condition of greater than or equal to ($gte) - for other criterias use the following $lte, $lt, $gt, $eq, $ne, $in, $nin, $exists
 db.students.find({"rollno":14},{name:1, _id:0}) -> This will find all documents with rollno=14 and will display only the name field from the document 
 db.students.find({},{name:0}) -> This will display all documents in the collection but will not display the name field 
+db.students.find().sort({$natural:1}) -> This will display the records in the sorted order of either insert or updated records with the last inserted/updated recording comming in the last 
 ```
 
 ### Update 
@@ -239,8 +240,9 @@ db.books.insert({
 ```xml
 db.getUsers() -> This will list out the users in the current database
 db.createUser({user:"techdata", pwd:"tech", roles:[{role:"userAdmin", db:"students"}]}) -> This will create an user called techdata with password tech and role userAdmin in database students 
-
 ```
+
+
 
 ### Other general syntax
 ```xml
