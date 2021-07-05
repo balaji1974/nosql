@@ -113,6 +113,7 @@ db.students.remove({}) -> This will remove all documents from the collection
 ```xml
 db.students.find({"name":"Haasya"}).explain("executionStats") -> In order for us to understand the index lets examine the find method's execution stats before creating an index. 
                                                                 ->This query will examine the entire collection to find the data ("totalKeysExamined" : 0, "totalDocsExamined" : 3)
+                                                                -> explain method takes 3 parametes executionStats, queryPlanner, allPlansExecution 
 db.students.find({"_id":ObjectId("60d0bc5f41cab5234e81d5b3")}).explain("executionStats") -> The same find with an indexed key will have the following ("totalKeysExamined" : 1, "totalDocsExamined" : 1)
 db.students.getIndexes() -> This will display all the indexes that are available for a collection
 db.students.createIndex({name:1}) -> This will create an index on the field name in ascending order and -1 for descending order 
@@ -242,6 +243,50 @@ db.getUsers() -> This will list out the users in the current database
 db.createUser({user:"techdata", pwd:"tech", roles:[{role:"userAdmin", db:"students"}]}) -> This will create an user called techdata with password tech and role userAdmin in database students 
 ```
 
+
+### Regular expressions in mongodb ($regex operator)
+```xml
+ db.students.find({name:{$regex:"Balaji"}}) -> This will search for name equals Balaji 
+ db.students.find({name:/Balaji/}) -> This is the same as above but with different format without using $regex 
+ db.students.find({name:{$regex:/^B/}}) -> This will display names that start with B
+ db.students.find({name:{$regex:/^b/,$options:'i'}}).pretty() -> Same as above but with case-insensitive search (i in $options stands for ignorecase)
+ db.students.find({name:{$regex:/i$/}}).pretty() -> This will display the name ending with i 
+ db.students.find({name:/i$/}).pretty() -> Same as above but without the $regex operator 
+```
+
+### Limit the records fetched 
+```xml
+db.students.find().limit(1).pretty() -> Will limit the fetched record size to 1 
+db.students.find().sort({$natural:-1}).limit(1).pretty() -> Will sort in in reverse order and fetch the 1st record, ie. the last record from the previous search 
+```
+
+### Map-Reduce
+```xml
+Dataset for Map-Reduce 
+db.loan.insert({id:101, loanid:123, amount:5000, status:"Active"});
+db.loan.insert({id:101, loanid:124, amount:6000, status:"Active"});
+db.loan.insert({id:102, loanid:1267, amount:15000, status:"Active"});
+db.loan.insert({id:102, loanid:1268, amount:25000, status:"Active"});
+db.loan.insert({id:101, loanid:125, amount:78000, status:"Expired"});
+db.loan.insert({id:101, loanid:126, amount:34000, status:"Expired"});
+db.loan.insert({id:101, loanid:127, amount:78000, status:"Active"});
+db.loan.insert({id:102, loanid:1269, amount:78000, status:"Expired"});
+
+This is the map reduce code and the final find will give immediate result. 
+db.loan.mapReduce( 
+    function() { emit(this.id, this.amount); },  
+    function(key, values) {return Array.sum(values)}, 
+    { 
+        query: {status:"Active"}, 
+        out:"Total"
+    }
+).find();
+
+This is the final output from the map reduce 
+db.Total.find()
+
+
+```
 
 
 ### Other general syntax
