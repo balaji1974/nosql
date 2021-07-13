@@ -274,16 +274,20 @@ db.loan.insert({id:102, loanid:1269, amount:78000, status:"Expired"});
 
 This is the map reduce code and the final find will give immediate result. 
 db.loan.mapReduce( 
-    function() { emit(this.id, this.amount); },  
-    function(key, values) {return Array.sum(values)}, 
+    function() { 
+        emit(this.id, this.amount); 
+    },  
+    function(key, values) {
+        return Array.sum(values)
+    }, 
     { 
         query: {status:"Active"}, 
-        out:"Total"
+        out:"total"
     }
 ).find();
 
-This is the final output from the map reduce 
-db.Total.find()
+To find the final output from the map reduce use the following command: 
+db.total.find()
 
 
 ```
@@ -522,6 +526,49 @@ db.ratings_v2.aggregate([
 // group by age_group, occupation, gm.genre, monthname;
 
 ```
+
+## Node.js (Quick notes)
+### Install node js (https://nodejs.org/en/download/)
+```xml
+node -> Enter the REPL mode -> Read / Evaluate / Print / Loop -> Test  
+const repl=require('repl') -> Store the repl commands into a constant 
+repl -> View the constant 
+.help -> Will display all commands that we can use 
+console.log("hello world") -> This will print in the console 
+var sum = function(a,b) {return a+b;}; -> this will create a function and store it into variable sum
+sum(9,99) -> This will call the function and print the result 
+a=5
+do { 
+... a++;
+... console.log("a = "+a);
+... }
+while (a<10); -> This will print the values of a>5 until a <11, we can save the same in a js file and run with 
+node <filename>.js
+npm -> Node package manager 
+npm --version -> this will give the version of the installed npm 
+npm list -g -> To list globally installed packages
+npm list -g --depth=1 -> To list globally installed packages to a depth of 1 level
+npm list -> To list locally installed packages
+
+Create a file called hello.js
+var http=require("http");
+http.createServer(function(request,response) {
+    response.writeHead(200, {'Content-Type': 'text/plain'});
+    response.end("Hello World!!\n");
+}).listen(8081);
+
+console.log('server started at http://127.0.0.1:8081/');
+
+run the file with the following command
+node hello.js
+
+launch the browser and access the page http://127.0.0.1:8081
+
+npm init-> This will initize the node project 
+
+
+```
+
 
 ## Simple Springboot application to connect to MongoDB and perform CRUD operations
 ### Application name: simple-crud-samples
