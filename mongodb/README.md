@@ -586,14 +586,32 @@ In pom.xml add the following dependencies:
 ```
 Create an Entity, a repository interface that extends MongoRepository and start using the repository for all the basic operations just like any regular Spring Data JPA / RDBMS samples.   
 
-## MongoDB CRUD
+## Simple maven application to connect to MongoDB and perform CRUD operations
+### Application name: plain-maven-crud-sample
+In pom.xml add the following dependencies:   
+```xml
+<dependency>
+    <groupId>org.mongodb</groupId>
+    <artifactId>mongo-java-driver</artifactId>
+    <version>3.12.7</version>
+</dependency>
+```
 
+```xml
+
+MongoClient mongoClient = new MongoClient(new MongoClientURI("mongodb://host1:27017")); // where host1 is your mongodb host name 
+MongoDatabase database = mongoClient.getDatabase("test");
+MongoCollection<Document> collection = database.getCollection("employee");
+
+collection.find().forEach((Consumer<Document>) doc -> System.out.println(doc));
+mongoClient.close();
+```
 
 
 References:   
 https://spring.io/guides/gs/accessing-data-mongodb/    
 https://docs.mongodb.com/manual/reference   
-
+https://mongodb.github.io/mongo-java-driver/3.4/driver/tutorials/
 
 
 
