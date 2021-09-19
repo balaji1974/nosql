@@ -619,7 +619,7 @@ mongoClient.close();
 ### mongodump --db <dbname> --collection <collection-name> -> This command will create a backup of single collection 
 ### mongorestore -> This command will retore the backedup databases
 ### mongorestore --db <dbname> <path-to-the-dump-file> -> This command will restore a single database 
-### mongorestore --db <dbname> <path-to-the-dump-file> -> This command will restore a single database 
+### mongorestore --db <dbname> --collection <collection-name> <path-to-the-dump-file-along-with-the-bson-file-name> -> This command will restore a single collection 
 
 
 
