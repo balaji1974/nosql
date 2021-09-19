@@ -607,6 +607,21 @@ collection.find().forEach((Consumer<Document>) doc -> System.out.println(doc));
 mongoClient.close();
 ```
 
+## MongoDB Clients
+### Studio 3T (Best but license needed for commercial use)
+### Robo 3T
+### MongoDB Compass
+### NoSQL Manager (for windows users)
+
+## MongoDB Backup 
+### mongodump -> This command will create a backup of all the databases
+### mongodump --db <dbname> -> This command will create a backup of single database 
+### mongodump --db <dbname> --collection <collection-name> -> This command will create a backup of single collection 
+### mongorestore -> This command will retore the backedup databases
+### mongorestore --db <dbname> <path-to-the-dump-file> -> This command will restore a single database 
+### mongorestore --db <dbname> <path-to-the-dump-file> -> This command will restore a single database 
+
+
 
 References:   
 https://spring.io/guides/gs/accessing-data-mongodb/    
