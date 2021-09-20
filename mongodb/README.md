@@ -621,6 +621,9 @@ mongoClient.close();
 ### mongorestore --db <dbname> <path-to-the-dump-file> -> This command will restore a single database 
 ### mongorestore --db <dbname> --collection <collection-name> <path-to-the-dump-file-along-with-the-bson-file-name> -> This command will restore a single collection 
 
+## MongoDB Atlas - Cloud - Free for personal use - Limited capability
+https://www.mongodb.com/cloud/atlas
+This can be easily connected with MongoDB Compass
 
 
 References:   
