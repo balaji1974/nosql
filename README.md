@@ -24,7 +24,7 @@ Modern DBs want to be somewhere in-between the above 2 ends
 ### Key-Value Store - Redis, Dynamo, Riak
 ### Column Orientied - BigData, Casandra, SimpleDB
 ### Graph - OrientDB, Neo4J, Tital
-### Document Orientied - MongoDB, CouchDB
+### Document Orientied - MongoDB, CouchDB, ElasticSearch
 
 ## Key-Value store - Redis (check the redis folder)
 

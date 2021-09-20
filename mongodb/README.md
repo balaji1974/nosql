@@ -623,7 +623,10 @@ mongoClient.close();
 
 ## MongoDB Atlas - Cloud - Free for personal use - Limited capability
 https://www.mongodb.com/cloud/atlas
-This can be easily connected with MongoDB Compass
+This can be easily connected with MongoDB Compass/Mongo Shell
+
+## Installing mongodb shell on Mac 
+### brew install mongosh
 
 
 References:   
