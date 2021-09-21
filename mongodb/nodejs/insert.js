@@ -16,10 +16,11 @@ MongoClient.connect(url,function(err, client) {
 	var std1={'name' : 'Haasya', 'no' :'B00778'}
 	var std2={'name': 'Havisha', 'no': 'B00779'}
 
-	 // Get the collection object
+	 // Get the collection object into which the documents need to be inserted
 	 var collection= db.collection('students');
 
-	// Insert the documents into the collection
+	// Insert the documents into the collection - insertMany for mulitple documents 
+	// and insertOne for single document
 	collection.insertMany([std1, std2], function(err, result) {
 		if(err) {
 			console.log(err);
