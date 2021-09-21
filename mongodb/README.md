@@ -574,7 +574,12 @@ launch the browser and access the page http://127.0.0.1:8081
 npm init-> This will initize the node project 
 
 ```
-### check other files for connection (dbconnect.js) and insert (insert.js) operations. 
+## check other files
+### Connection to DB using NodeJS - dbconnect.js
+### Insert to collection using NodeJS - insert.js
+### Update to collection using NodeJS - update.js
+### Delete from collection using NodeJS - delete.js
+### Query the collection using NodeJS - query.js 
 
 
 ## Simple Springboot application to connect to MongoDB and perform CRUD operations
