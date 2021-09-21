@@ -298,6 +298,7 @@ db.total.find()
 
 
 ### Other general syntax
+
 ```xml
 //load 200 documents into the collection
 // Here id field is not specified and hence mongodb generates an imutable id field automatically.
@@ -554,6 +555,8 @@ npm list -g -> To list globally installed packages
 npm list -g --depth=1 -> To list globally installed packages to a depth of 1 level
 npm list -> To list locally installed packages
 
+npm install mongodb -> This will install the mongodb node package 
+
 Create a file called hello.js
 var http=require("http");
 http.createServer(function(request,response) {
@@ -570,9 +573,8 @@ launch the browser and access the page http://127.0.0.1:8081
 
 npm init-> This will initize the node project 
 
->>>>To complete connection to MongoDB>>>>>>
-
 ```
+### check other files are for connection (firstnode.js) and crud (crud.js) operations. 
 
 
 ## Simple Springboot application to connect to MongoDB and perform CRUD operations
