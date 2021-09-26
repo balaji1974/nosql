@@ -33,6 +33,11 @@ Note: Type concept is now deprecated and we can use the following url instead
 http://localhost:9400/review/_doc
  ```
 
+## Display all the index in elasticsearch
+```xml
+GET http://localhost:9400/_cat/indices
+```
+
 ## Mapping
 ### Mapping is the process of defining how a document, and the fields it contains, are stored and indexed, like DDL in RDBMS
 ```xml
@@ -43,11 +48,103 @@ GET http://localhost:9400/review
 ## Documents 
 ### These are the actual records that are stored inside an index, they are like rows inside a table in RDBMS
 
+## Elasticsearch field data types
+```xml
+https://www.elastic.co/guide/en/elasticsearch/reference/7.1/mapping-types.html#_core_datatypes
+```
+
+## Create a index from a mapping file (structure of a database table in RDBMS)
+```xml
+PUT http://localhost:9400/ml-ratings
+BODY
+{
+	"mappings" : {
+		"dynamic" : false,
+		"properties" : {
+			"userId" : {"type": "long", "store": true},
+			"movieId" : {"type": "long", "store": true},
+			"title" : {"type" : "text", "store" : true, "index" : true, "analyzer" : "snowball"},
+			"year" : {"type" : "short", "store" : true},
+			"genres" : {"type" : "keyword", "store": true},
+			"rating" : {"type" : "float", "store" : true},
+			"ts" : {"type" : "date", "store": true, "format":"dd/MM/yyyy HH:mm"}
+		}
+	},
+	"settings" : {
+		"number_of_shards" : 5,
+		"number_of_replicas" : 1
+	}
+}
+
+PUT http://localhost:9400/ml-tags
+BODY
+{
+	"mappings" : {
+		"dynamic" : false,  //false, true, strict
+		"properties" : {
+			"userId" : {"type": "long", "store": true},
+			"movieId" : {"type": "long", "store": true},
+			"title" : {"type" : "text", "store" : true, "index" : true, "analyzer" : "snowball", "copy_to" : "all"},
+			"year" : {"type" : "short", "store" : true},
+			"genres" : {"type" : "keyword", "store": true, "copy_to" : "all"},
+			"tag" : {"type" : "text", "store" : true, "index" : true, "analyzer" : "snowball", "copy_to" : "all"},
+			"ts" : {"type" : "date", "store": true, "format":"dd/MM/yyyy HH:mm"},
+			"all" : {"type" : "text", "index" : true, "store": false, "analyzer": "standard"} 
+		}
+	},
+	"settings" : {
+		"number_of_shards" : 3,
+		"number_of_replicas" : 1
+	}
+}
+
+Here the "all" field will have values from title, genres and tag field because we have specified copy_to: all in these respective fields. Its value will be indexed since we specified index: true but it will not be stored since we specified as store: false
+
+PUT http://localhost:9400/ml-users
+BODY
+{
+	"mappings" : {
+		"properties" : {
+			"id" : {"type": "integer"},
+			"age_group" : {"type": "keyword"},
+			"gender" : {"type": "keyword"},
+			"occupation" : {"type" : "keyword"},
+			"zip_code" : {"type" : "keyword"}
+		}
+	},
+	"settings" : {
+		"number_of_shards" : 3,
+		"number_of_replicas" : 1
+	}
+}
+
+PUT http://localhost:9400/ml-movies
+BODY 
+{
+	"mappings" : {
+		"dynamic" : false,
+		"properties" : {
+			"id" : {"type": "long", "store": true},
+			"title" : {"type" : "text", "store" : true, "index" : true, "analyzer" : "snowball", "copy_to" : "title_genres"},
+			"year" : {"type" : "short", "store" : true},
+			"genres" : {"type" : "keyword", "store": true, "copy_to" : "title_genres"},
+			"title_genres" : {"type" : "text", "index" : true, "store": false, "analyzer": "standard"}
+		}
+
+	},
+	"settings" : {
+		"number_of_shards" : 1,
+		"number_of_replicas" : 1
+	}
+}
+
+```
+
 
 ### Insert data 
 ```xml
 POST http://localhost:9400/review/_doc
-<sample data - in the  body of the request>
+BODY <sample data - in the  body of the request>
 {
     "id": 0,
     "country": "Italy",
@@ -66,7 +163,7 @@ POST http://localhost:9400/review/_doc
     "active" : true
   }
 
-<sample data - in the  body of the request>
+BODY <sample data - in the  body of the request>
   {
     "id": 1,
     "country": "Portugal",
@@ -92,6 +189,7 @@ GET http://localhost:9400/review/_search
  -> Will result in all records being returned
 
 GET http://localhost:9400/review/_search
+BODY 
 {
   "query": {
     "match": {
@@ -100,7 +198,20 @@ GET http://localhost:9400/review/_search
   }
 }
 
- -> Will result in matching description field containing "tropical fruit"  
+ 	-> Will result in matching description field containing "tropical fruit"  
+
+Sort data based on a field
+GET http://localhost:9400/review/_search?sort=price
+	-> Will sort retreived data based on the field price 
+
+Search based on id
+GET http://localhost:9400/review/_doc/<id>
+	-> Will retreive the data based on the id field 
+
+Count no. of records in the index
+GET http://localhost:9400/review/_count 
+	-> Will count the records in the index 'review'
+
 
 
 ```
@@ -110,6 +221,8 @@ GET http://localhost:9400/review/_search
 
 
 References:
+https://github.com/okmich/rdbms_2_nosql/tree/master/elasticsearch
+https://www.elastic.co/guide/en/elasticsearch/reference/current
 https://reflectoring.io/spring-boot-elasticsearch/
 https://www.elastic.co/blog/
 
