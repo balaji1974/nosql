@@ -8,6 +8,9 @@ From the installation folder start the server.
 To start Elasticserch after installation
 ./bin/elasticsearch
 
+Note: 9200 is the default port for elasticsearch which can be changed in elasticsearch.yml file located in the config folder.
+In all the below example I have used port 9400 by changing this defult port.  
+
 Query the server status
 GET localhost:9400/ 
 
