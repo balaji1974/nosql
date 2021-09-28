@@ -220,14 +220,18 @@ GET http://localhost:9400/review/_count
 ```
 
 ## Springboot with Elasticsearch
+```xml
+Sample project - spring-data-jpa-sample
 
 
+```
 
 References:
 https://github.com/okmich/rdbms_2_nosql/tree/master/elasticsearch
 https://www.elastic.co/guide/en/elasticsearch/reference/current
 https://reflectoring.io/spring-boot-elasticsearch/
 https://www.elastic.co/blog/
+https://reflectoring.io/spring-boot-elasticsearch/
 
 
 
