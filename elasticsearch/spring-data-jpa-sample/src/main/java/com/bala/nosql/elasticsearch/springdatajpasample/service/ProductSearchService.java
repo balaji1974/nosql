@@ -17,13 +17,14 @@ public class ProductSearchService {
 	@Autowired
 	private ElasticsearchOperations elasticsearchOperations;
 
-	public String createProductIndex(Product product) {
-
-		System.out.println("Here1");
-		IndexQuery indexQuery = new IndexQueryBuilder().withId(product.getId().toString()).withObject(product).build();
-		System.out.println("Here2");
-		String documentId = elasticsearchOperations.index(indexQuery, IndexCoordinates.of(PRODUCT_INDEX));
-		System.out.println("Here3");
-		return documentId;
-	}
+	/*
+	 * public String createProductIndex(Product product) {
+	 * 
+	 * System.out.println("Here1"); IndexQuery indexQuery = new
+	 * IndexQueryBuilder().withId(product.getId().toString()).withObject(product).
+	 * build(); System.out.println("Here2"); String documentId =
+	 * elasticsearchOperations.index(indexQuery,
+	 * IndexCoordinates.of(PRODUCT_INDEX)); System.out.println("Here3"); return
+	 * documentId; }
+	 */
 }
