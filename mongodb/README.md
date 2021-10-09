@@ -2,9 +2,10 @@
 
 ## Key Features
 ### MongoDB is schema less, fast, highly scalable and supports big data. 
-### Tables are Collections and Rows are Documents in MongoDB 
-### Primary Key - Foreign Key relationship is achieved by embedding documents inside document. 
-### Every MongoDB has a unique auto generated id (primary key) called ObjectId
+### Database in SQL are the same in MongoDB and are also called Database. 
+### Tables are Collections, Rows are Documents and Columns are Fields in MongoDB. 
+### Primary Key - Foreign Key relationship is achieved by embedding documents inside document also known as Sub Documents (Reference). 
+### Every MongoDB has a unique auto generated id (primary key) called ObjectId. 
 ### Combination of database name and a collection is called a namespace in MongoDB
 
 Records are stored as documents (xml, json, yaml etc) -> Its an equivalant of a table in RDBMS   
@@ -102,7 +103,7 @@ db.students.findAndModify({query:{name:"Balaji"}, update:{$inc:{rollno:3}}}) -> 
 ### Delete (will return boolen ack along with count)
 ```xml
 db.students.deleteOne({"rollno":15}) -> This will detele the first matching document where the rollno is 15
-db.students.updateMany({"rollno":{$gte:15}}) -> This will delete all documents that have roll no. greater or equal to 15
+db.students.deleteMany({"rollno":{$gte:15}}) -> This will delete all documents that have roll no. greater or equal to 15
 ```
 
 ### Remove (will return count of removed documents)
@@ -303,12 +304,13 @@ db.total.find()
 //load 200 documents into the collection
 // Here id field is not specified and hence mongodb generates an imutable id field automatically.
 // This id field can be of any data type except arrays 
-for (var i = 1; i <= 200; i++){
+for (var i = 1; i < =200; i++){
     db.clicks.save({'field' : 'x', 'counter' : i})
 }
 
 //get all movies released in the year 2000
 db.movies.find({'release_year': 1995})
+db.movies.find( {'release_year': { $in :[1995, 1996]}})
 
 //get any ten female users who are teens
 db.users.find({$and : [{'age_id' : 1}, {'gender' : 'F'}]}).limit(10)
