@@ -1,7 +1,13 @@
 package com.bala.nosql.mongodb.springmongosamples.entity;
 
+import org.springframework.data.mongodb.core.mapping.Field;
+
 public class Subject {
+	
+	@Field("subject_id")
 	private String subjectId;
+	
+	@Field("subject_name")
 	private String subjectName;
 	
 	public String getSubjectId() {

@@ -1,7 +1,13 @@
 package com.bala.nosql.mongodb.springmongosamples.entity;
 
+import org.springframework.data.mongodb.core.mapping.Field;
+
 public class Department {
+	
+	@Field("department_name")
 	private String departmentName;
+	
+	@Field("location_id")
 	private String locationId;
 	
 	public String getDepartmentName() {

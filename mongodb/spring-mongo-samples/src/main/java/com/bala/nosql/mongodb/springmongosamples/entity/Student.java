@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Student {
 	
 	@Id
-	private int id;
+	private String id;
 	
 	// @Field(name="name") // Optional as java name and collection field name are same
 	private String name;
@@ -25,10 +25,10 @@ public class Student {
 	private List<Subject> subjects;
 	
 	
-	public int getId() {
+	public String getId() {
 		return id;
 	}
-	public void setId(int id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 	public String getName() {

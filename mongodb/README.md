@@ -604,9 +604,7 @@ In pom.xml add the following dependencies:
     <artifactId>mongo-java-driver</artifactId>
     <version>3.12.7</version>
 </dependency>
-```
 
-```xml
 
 MongoClient mongoClient = new MongoClient(new MongoClientURI("mongodb://host1:27017")); // where host1 is your mongodb host name 
 MongoDatabase database = mongoClient.getDatabase("test");
@@ -615,6 +613,291 @@ MongoCollection<Document> collection = database.getCollection("employee");
 collection.find().forEach((Consumer<Document>) doc -> System.out.println(doc));
 mongoClient.close();
 ```
+
+## Sample Spring JPA application for mongodb: 
+### Application Name: spring-mongo-samples
+```xml
+This application is a regular Spring Data JPA application which has the following POM dependencies: 
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-mongodb</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+        
+Next in the application.properties file add the following connection configuration of Mongodb
+spring.data.mongodb.host=localhost
+spring.data.mongodb.port=27017
+spring.data.mongodb.database=spring
+
+Finally create the contoller, service layers just like any regular Spring Boot MVC application. 
+
+In the application main class add the following annotations:
+@EnableMongoRepositories("com.bala.nosql.mongodb.springmongosamples.repository")
+@ComponentScan("com.bala.nosql.mongodb.springmongosamples.*")
+
+Next create a repository class that extends the Mongo repository as: 
+public interface StudentRepository extends MongoRepository<Student,String>
+
+Next create the Entity classes that represent the mongodb collections. 
+Next in the main student class which is a collection containing other collection add the annotation: 
+@Document(collection="student")
+
+Also define an @Id field and @Field annotation for variables that differ from the collection's field name, if they are same then you can omit it and the mapping will be automatic.  
+```
+
+### Insert Operation: 
+```xml
+
+The service class will have the following method: 
+public Student createStudent(Student student) {
+    return studentRepository.save(student);
+}
+
+The controller class will have the following method: 
+@PostMapping("/create")
+public Student createStudent(@RequestBody Student student) {
+    return studentService.createStudent(student);   
+}
+
+That's it. Start the server and perform an insert operation from the REST client as below: 
+
+
+POST http://localhost:8080/api/student/create
+BODY
+{
+    "name": "testi",
+    "email": "someemail@gmail.com",
+    "department": {
+        "departmentName": "Physics",
+        "locationId": "P1"
+    },
+    "subjects": [
+        {
+            "subjectName": "Physical Reaction",
+            "subjectId": "PR1"
+        },
+        {
+            "subjectName": "Physical Testing and Results",
+            "subjectId": "PR2"
+        }
+    ]
+}
+```
+
+### Find Operation: 
+```xml
+For the find document add the following method in the student service and return it 
+public Student getStudentById(String id) {
+    return studentRepository.findById(id).get();
+}
+
+The controller class will have the following method: 
+@GetMapping("/find/{id}")
+public Student getStudentById(@PathVariable String id) {
+    return studentService.getStudentById(id);
+}
+
+Next launch the REST client and fire the URL: 
+GET http://localhost:8080/api/student/find/<your document id>
+
+The reponse that we get will be something like this if a match is found: 
+{
+    "id": "61649c0e0f25e40701021de5",
+    "name": "testi",
+    "email": "someemail@gmail.com",
+    "department": {
+        "departmentName": "Physics",
+        "locationId": "P1"
+    },
+    "subjects": [
+        {
+            "subjectId": "PR1",
+            "subjectName": "Physical Reaction"
+        },
+        {
+            "subjectId": "PR2",
+            "subjectName": "Physical Testing and Results"
+        }
+    ]
+}
+```
+
+### Find all Operation: 
+```xml
+For the find all documents add the following method in the student service and return it
+public List<Student> getStudents() {
+    return studentRepository.findAll();
+}
+
+The controller class will have the following method: 
+@GetMapping("/findall")
+public List<Student> getStudents() {
+    return studentService.getStudents();
+}
+
+Next launch the REST client and fire the URL: 
+GET http://localhost:8080/api/student/findall
+
+The reponse that we get will be something like this: 
+[
+    {
+        "id": "61633544c5cccf9cd07dffb7",
+        "name": "John",
+        "email": "john@gmail.com",
+        "department": null,
+        "subjects": null
+    },
+    {
+        "id": "61633572c5cccf9cd07dffb8",
+        "name": "David",
+        "email": "david@gmail.com",
+        "department": {
+            "departmentName": "Information Technology",
+            "locationId": "L1"
+        },
+        "subjects": null
+    },
+    {
+        "id": "616335cdc5cccf9cd07dffb9",
+        "name": "Chris",
+        "email": "chris@gmail.com",
+        "department": null,
+        "subjects": [
+            {
+                "subjectId": "M1",
+                "subjectName": "Maths"
+            },
+            {
+                "subjectId": "P1",
+                "subjectName": "Physics"
+            }
+        ]
+    },
+    {
+        "id": "0",
+        "name": "New Name Data",
+        "email": "someemail@gmail.com",
+        "department": null,
+        "subjects": null
+    },
+    {
+        "id": "616497280f25e40701021de1",
+        "name": "testing",
+        "email": "someemail@gmail.com",
+        "department": null,
+        "subjects": null
+    },
+    {
+        "id": "6164972f0f25e40701021de2",
+        "name": "testi",
+        "email": "someemail@gmail.com",
+        "department": null,
+        "subjects": null
+    },
+    {
+        "id": "61649c0e0f25e40701021de5",
+        "name": "testi",
+        "email": "someemail@gmail.com",
+        "department": {
+            "departmentName": "Physics",
+            "locationId": "P1"
+        },
+        "subjects": [
+            {
+                "subjectId": "PR1",
+                "subjectName": "Physical Reaction"
+            },
+            {
+                "subjectId": "PR2",
+                "subjectName": "Physical Testing and Results"
+            }
+        ]
+    }
+]
+
+```
+
+### Update Operation: 
+```xml
+For the update documents add the following method in the student service and return it
+public Student updateStudent(Student student) {
+    return studentRepository.save(student);
+}
+
+The controller class will have the following method: 
+@PutMapping("/update")
+public Student updateStudent(@RequestBody Student student) {
+    return studentService.updateStudent(student);
+}
+
+Next launch the REST client and fire the URL: 
+PUT http://localhost:8080/api/student/update
+BODY
+{
+    "id": "61649c0e0f25e40701021de5",
+    "name": "test",
+    "email": "test@gmail.com",
+    "department": {
+        "departmentName": "Physics",
+        "locationId": "P1"
+    },
+    "subjects": [
+        {
+            "subjectId": "PR1",
+            "subjectName": "Physical Reaction"
+        },
+        {
+            "subjectId": "PR2",
+            "subjectName": "Physical Testing and Results"
+        }
+    ]
+}
+
+The reponse that we get will be something like this: 
+{
+    "id": "61649c0e0f25e40701021de5",
+    "name": "test",
+    "email": "test@gmail.com",
+    "department": {
+        "departmentName": "Physics",
+        "locationId": "P1"
+    },
+    "subjects": [
+        {
+            "subjectId": "PR1",
+            "subjectName": "Physical Reaction"
+        },
+        {
+            "subjectId": "PR2",
+            "subjectName": "Physical Testing and Results"
+        }
+    ]
+}
+```
+
+### Delete Operation: 
+```xml
+For the delete document add the following method in the student service 
+public void deleteStudentById(String id) {
+    studentRepository.deleteById(id);
+}
+
+The controller class will have the following method: 
+@DeleteMapping("/delete/{id}")
+public void deleteStudent(@PathVariable String id) {
+    studentService.deleteStudentById(id);
+}
+
+Next launch the REST client and fire the URL: 
+GET http://localhost:8080/api/student/delete/<your document id>
+
+The reponse status will be 200 if the delete is successful. 
+```
+
+
 
 ## MongoDB Clients
 ### Studio 3T (Best but license needed for commercial use)
