@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bala.nosql.mongodb.springmongosamples.entity.Student;
@@ -45,5 +46,20 @@ public class StudentController {
 	@DeleteMapping("/delete/{id}")
 	public void deleteStudent(@PathVariable String id) {
 		studentService.deleteStudentById(id);
+	}
+	
+	@GetMapping("/findbyname/{name}")
+	public List<Student> getStudentsByName(@PathVariable String name) {
+		return studentService.getStudentsByName(name);
+	}
+	
+	@GetMapping("/findbynameandemail")
+	public List<Student> getStudentsByNameAndEmail(@RequestParam String name,@RequestParam String email) {
+		return studentService.getStudentsByNameAndEmail(name,email);
+	}
+	
+	@GetMapping("/findbynameoremail")
+	public List<Student> getStudentsByNameOrEmail(@RequestParam String name,@RequestParam String email) {
+		return studentService.getStudentsByNameOrEmail(name,email);
 	}
 }

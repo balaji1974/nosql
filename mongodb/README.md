@@ -897,6 +897,139 @@ GET http://localhost:8080/api/student/delete/<your document id>
 The reponse status will be 200 if the delete is successful. 
 ```
 
+### Find By Specific Field: 
+```xml
+For the find document add the following method in the student service and return it 
+public List<Student> getStudentsByName(String name) {
+    return studentRepository.findByName(name);
+}
+
+The controller class will have the following method: 
+@GetMapping("/findbyname/{name}")
+public List<Student> getStudentsByName(@PathVariable String name) {
+    return studentService.getStudentsByName(name);
+}
+
+The most important point here is the repository interface which will not have this method by default and so we need to add it as: 
+List<Student> findByName(String name);
+
+Next launch the REST client and fire the URL: 
+GET http://localhost:8080/api/student/findbyname/<name>
+
+The reponse that we get will be something like this if a match is found: 
+[
+    {
+        "id": "6164972f0f25e40701021de2",
+        "name": "test",
+        "email": "someemail@gmail.com",
+        "department": null,
+        "subjects": null
+    },
+    {
+        "id": "61649c0e0f25e40701021de5",
+        "name": "test",
+        "email": "test@gmail.com",
+        "department": {
+            "departmentName": "Physics",
+            "locationId": "P1"
+        },
+        "subjects": [
+            {
+                "subjectId": "PR1",
+                "subjectName": "Physical Reaction"
+            },
+            {
+                "subjectId": "PR2",
+                "subjectName": "Physical Testing and Results"
+            }
+        ]
+    }
+]
+```
+
+### Find By Multiple Fields (And - operator): 
+```xml
+For the find document add the following method in the student service and return it 
+public List<Student> getStudentsByNameAndEmail(String name, String email) {
+    return studentRepository.findByNameAndEmail(name, email);
+}
+
+The controller class will have the following method: 
+@GetMapping("/findbynameandemail")
+public List<Student> getStudentsByNameAndEmail(@RequestParam String name,@RequestParam String email) {
+    return studentService.getStudentsByNameAndEmail(name,email);
+}
+
+The most important point here is the repository interface which will not have this method by default and so we need to add it as: 
+List<Student> findByNameAndEmail(String name, String email);
+
+Next launch the REST client and fire the URL: 
+GET http://localhost:8080/api/student/findbynameandemail?name=<name>&email=<email>
+
+The reponse that we get will be something like this if a match is found: 
+[
+    {
+        "id": "61633572c5cccf9cd07dffb8",
+        "name": "David",
+        "email": "david@gmail.com",
+        "department": {
+            "departmentName": "Information Technology",
+            "locationId": "L1"
+        },
+        "subjects": null
+    }
+]
+```
+
+### Find By Multiple Fields (Or - operator): 
+```xml
+For the find document add the following method in the student service and return it 
+public List<Student> getStudentsByNameOrEmail(String name, String email) {
+    return studentRepository.findByNameOrEmail(name, email);
+}
+
+The controller class will have the following method: 
+@GetMapping("/findbynameoremail")
+public List<Student> getStudentsByNameOrEmail(@RequestParam String name,@RequestParam String email) {
+    return studentService.getStudentsByNameOrEmail(name,email);
+}
+
+The most important point here is the repository interface which will not have this method by default and so we need to add it as: 
+List<Student> findByNameOrEmail(String name, String email);
+
+Next launch the REST client and fire the URL: 
+GET http://localhost:8080/api/student/findbynameoremail?name=David&email=chris@gmail.com
+
+The reponse that we get will be something like this if a match is found: 
+[
+    {
+        "id": "61633572c5cccf9cd07dffb8",
+        "name": "David",
+        "email": "david@gmail.com",
+        "department": {
+            "departmentName": "Information Technology",
+            "locationId": "L1"
+        },
+        "subjects": null
+    },
+    {
+        "id": "616335cdc5cccf9cd07dffb9",
+        "name": "Chris",
+        "email": "chris@gmail.com",
+        "department": null,
+        "subjects": [
+            {
+                "subjectId": "M1",
+                "subjectName": "Maths"
+            },
+            {
+                "subjectId": "P1",
+                "subjectName": "Physics"
+            }
+        ]
+    }
+]
+```
 
 
 ## MongoDB Clients
@@ -914,18 +1047,20 @@ The reponse status will be 200 if the delete is successful.
 ### mongorestore --db <dbname> --collection <collection-name> <path-to-the-dump-file-along-with-the-bson-file-name> -> This command will restore a single collection 
 
 ## MongoDB Atlas - Cloud - Free for personal use - Limited capability
+```xml
 https://www.mongodb.com/cloud/atlas
 This can be easily connected with MongoDB Compass/Mongo Shell
+```
 
 ## Installing mongodb shell on Mac 
 ### brew install mongosh
 
-
+```xml
 References:   
 https://spring.io/guides/gs/accessing-data-mongodb/    
 https://docs.mongodb.com/manual/reference   
 https://mongodb.github.io/mongo-java-driver/3.4/driver/tutorials/
-
-
+https://www.udemy.com/course/mongodb-with-spring-boot-spring-data-mongorepository-mlab-cloudfoundry
+```
 
 
