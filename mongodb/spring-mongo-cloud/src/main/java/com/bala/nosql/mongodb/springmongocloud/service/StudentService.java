@@ -1,4 +1,4 @@
-package com.bala.nosql.mongodb.springmongosamples.service;
+package com.bala.nosql.mongodb.springmongocloud.service;
 
 
 import java.util.List;
@@ -9,8 +9,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import com.bala.nosql.mongodb.springmongosamples.entity.Student;
-import com.bala.nosql.mongodb.springmongosamples.repository.StudentRepository;
+import com.bala.nosql.mongodb.springmongocloud.entity.Student;
+import com.bala.nosql.mongodb.springmongocloud.repository.StudentRepository;
 
 @Service
 public class StudentService {

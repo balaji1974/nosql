@@ -1,4 +1,4 @@
-package com.bala.nosql.mongodb.springmongosamples.controller;
+package com.bala.nosql.mongodb.springmongocloud.controller;
 
 import java.util.List;
 
@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.bala.nosql.mongodb.springmongosamples.entity.Student;
-import com.bala.nosql.mongodb.springmongosamples.service.StudentService;
+import com.bala.nosql.mongodb.springmongocloud.entity.Student;
+import com.bala.nosql.mongodb.springmongocloud.service.StudentService;
 
 @RestController
 @RequestMapping("/api/student")

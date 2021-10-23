@@ -1,4 +1,4 @@
-package com.bala.nosql.mongodb.springmongosamples.repository;
+package com.bala.nosql.mongodb.springmongocloud.repository;
 
 import java.util.List;
 
@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import com.bala.nosql.mongodb.springmongosamples.entity.Student;
+import com.bala.nosql.mongodb.springmongocloud.entity.Student;
 
 @Repository
 public interface StudentRepository extends MongoRepository<Student,String>{

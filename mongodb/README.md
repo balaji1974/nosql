@@ -1031,6 +1031,448 @@ The reponse that we get will be something like this if a match is found:
 ]
 ```
 
+### Pagination: 
+```xml
+
+Concept -
+Page No.    Skip        Limit
+1           0           10
+2           10          10
+3           20          10 
+```
+
+### Find By Multiple Fields (And - operator): 
+```xml
+For the find document add the following method in the student service and return it 
+public List<Student> getStudentsByNameAndEmail(String name, String email) {
+    return studentRepository.findByNameAndEmail(name, email);
+}
+
+The controller class will have the following method: 
+@GetMapping("/findbynameandemail")
+public List<Student> getStudentsByNameAndEmail(@RequestParam String name,@RequestParam String email) {
+    return studentService.getStudentsByNameAndEmail(name,email);
+}
+
+The most important point here is the repository interface which will not have this method by default and so we need to add it as: 
+List<Student> findByNameAndEmail(String name, String email);
+
+Next launch the REST client and fire the URL: 
+GET http://localhost:8080/api/student/findbynameandemail?name=<name>&email=<email>
+
+The reponse that we get will be something like this if a match is found: 
+[
+    {
+        "id": "61633572c5cccf9cd07dffb8",
+        "name": "David",
+        "email": "david@gmail.com",
+        "department": {
+            "departmentName": "Information Technology",
+            "locationId": "L1"
+        },
+        "subjects": null
+    }
+]
+```
+
+### Pagination in Action: 
+```xml
+For the pagination add the following method in the student service and return it 
+public List<Student> getStudentsWithPagination(int pageNo, int pageSize) {
+    // Since page no is a zero based index use -1 from whatever pageno is got
+    Pageable pageable= PageRequest.of(pageNo-1, pageSize);
+    return studentRepository.findAll(pageable).getContent();
+}
+
+Here Pageable is an interface from the Spring Data jpa 'org.springframework.data.domain.Pageable'
+
+The controller class will have the following method: 
+@GetMapping("/findallwithpagination")
+public List<Student> getStudentsWithPagination(@RequestParam int pageno,@RequestParam int pagesize) {
+    return studentService.getStudentsWithPagination(pageno,pagesize);
+}
+
+Next launch the REST client and fire the URL: 
+GET http://localhost:8080/api/student/findallwithpagination?pageno=1&pagesize=2
+
+The reponse that we get will be something like this - a match with pagesize of 2 records: 
+[
+    {
+        "id": "61633572c5cccf9cd07dffb8",
+        "name": "David",
+        "email": "david@gmail.com",
+        "department": {
+            "departmentName": "Information Technology",
+            "locationId": "L1"
+        },
+        "subjects": null
+    },
+    {
+        "id": "616335cdc5cccf9cd07dffb9",
+        "name": "Chris",
+        "email": "chris@gmail.com",
+        "department": null,
+        "subjects": [
+            {
+                "subjectId": "M1",
+                "subjectName": "Maths"
+            },
+            {
+                "subjectId": "P1",
+                "subjectName": "Physics"
+            }
+        ]
+    }
+]
+```
+
+### Find records and sort them: 
+```xml
+For the sorting add the following method in the student service and return it 
+public List<Student> getStudentsSortByName() {
+    Sort sort=Sort.by(Sort.Direction.ASC, "name");
+    return studentRepository.findAll(sort);
+}
+
+Here Sort is an interface from the Spring Data jpa 'org.springframework.data.domain.Sort'
+
+The controller class will have the following method: 
+@GetMapping("/findallsortbyname")
+public List<Student> getStudentsSortByName() {
+    return studentService.getStudentsSortByName();
+}
+
+Next launch the REST client and fire the URL: 
+GET http://localhost:8080/api/student/findallsortbyname
+
+The reponse that we get will be something like this - all records sorted by name: 
+[
+    {
+        "id": "616335cdc5cccf9cd07dffb9",
+        "name": "Chris",
+        "email": "chris@gmail.com",
+        "department": null,
+        "subjects": [
+            {
+                "subjectId": "M1",
+                "subjectName": "Maths"
+            },
+            {
+                "subjectId": "P1",
+                "subjectName": "Physics"
+            }
+        ]
+    },
+    {
+        "id": "61633572c5cccf9cd07dffb8",
+        "name": "David",
+        "email": "david@gmail.com",
+        "department": {
+            "departmentName": "Information Technology",
+            "locationId": "L1"
+        },
+        "subjects": null
+    },
+    {
+        "id": "6164972f0f25e40701021de2",
+        "name": "test",
+        "email": "someemail@gmail.com",
+        "department": null,
+        "subjects": null
+    },
+    {
+        "id": "61649c0e0f25e40701021de5",
+        "name": "test",
+        "email": "test@gmail.com",
+        "department": {
+            "departmentName": "Physics",
+            "locationId": "P1"
+        },
+        "subjects": [
+            {
+                "subjectId": "PR1",
+                "subjectName": "Physical Reaction"
+            },
+            {
+                "subjectId": "PR2",
+                "subjectName": "Physical Testing and Results"
+            }
+        ]
+    },
+    {
+        "id": "616497280f25e40701021de1",
+        "name": "testing",
+        "email": "someemail@gmail.com",
+        "department": null,
+        "subjects": null
+    }
+]
+
+Sort by mulitple fields
+Sort sort=Sort.by(Sort.Direction.ASC, "name","_id");
+
+Sort by mulitple fields with different directions of sort
+Sort sort=Sort.by(Sort.Order.asc("name"),Sort.Order.desc("_id"));
+
+Another way to acheive this is
+Sort sort=Sort.by("name").ascending().and(Sort.by("_id").descending());  
+```
+
+
+### Find documents by subdocument fields: 
+```xml
+For the finding subdocuments add the following method in the student service and return it 
+public List<Student> getStudentsByDepartmentname(String departmentname) {
+    return studentRepository.findByDepartmentDepartmentName(departmentname);
+}
+
+The controller class will have the following method: 
+@GetMapping("/findbydepartmentname/{departmentname}")
+public List<Student> getStudentsByDepartnameName(@PathVariable String departmentname) {
+    return studentService.getStudentsByDepartmentname(departmentname);
+}
+
+The most important point here is the repository interface which will not have this method by default and so we need to add it as: 
+List<Student> findByDepartmentDepartmentName(String departmentname);
+
+Next launch the REST client and fire the URL: 
+GET http://localhost:8080/api/student/findbydepartmentname/Physics
+
+The reponse that we get will be something like this if a match is found: 
+[
+    {
+        "id": "61649c0e0f25e40701021de5",
+        "name": "test",
+        "email": "test@gmail.com",
+        "department": {
+            "departmentName": "Physics",
+            "locationId": "P1"
+        },
+        "subjects": [
+            {
+                "subjectId": "PR1",
+                "subjectName": "Physical Reaction"
+            },
+            {
+                "subjectId": "PR2",
+                "subjectName": "Physical Testing and Results"
+            }
+        ]
+    }
+]
+```
+
+### Find documents by subdocument array fields: 
+```xml
+For the finding subdocuments that are in an array add the following method in the student service and return it 
+public List<Student> getStudentsBySubjectname(String subjectname) {
+    return studentRepository.findBySubjectsSubjectName(subjectname);
+}
+
+The controller class will have the following method: 
+@GetMapping("/findbysubjectname/{subjectname}")
+public List<Student> getStudentsBySubjectName(@PathVariable String subjectname) {
+    return studentService.getStudentsBySubjectname(subjectname);
+}
+
+The most important point here is the repository interface which will not have this method by default and so we need to add it as: 
+List<Student> findBySubjectsSubjectName(String subjectname);
+
+Next launch the REST client and fire the URL: 
+GET http://localhost:8080/api/student/findbysubjectname/Physical Reaction
+
+The reponse that we get will be something like this if a match is found: 
+[
+    {
+        "id": "61649c0e0f25e40701021de5",
+        "name": "test",
+        "email": "test@gmail.com",
+        "department": {
+            "departmentName": "Physics",
+            "locationId": "P1"
+        },
+        "subjects": [
+            {
+                "subjectId": "PR1",
+                "subjectName": "Physical Reaction"
+            },
+            {
+                "subjectId": "PR2",
+                "subjectName": "Physical Testing and Results"
+            }
+        ]
+    }
+]
+```
+
+### Find documents using a like query: 
+```xml
+This is the general way to query for like in mongodb
+{
+    "email" : /gmail/
+}
+
+For  finding students using like query we add the following method in the student service and return it 
+public List<Student> getStudentsByEmailLike(String email) {
+    return studentRepository.findByEmailLike(email);
+}
+
+The controller class will have the following method: 
+@GetMapping("/findbyemaillike/{email}")
+public List<Student> getStudentsByEmailLike(@PathVariable String email) {
+    return studentRepository.findByEmailIsLike(email);
+}
+
+The most important point here is the repository interface which will not have this method by default and so we need to add it as: 
+List<Student> findByEmailIsLike(String email);
+
+Next launch the REST client and fire the URL: 
+GET http://localhost:8080/api/student/findbyemaillike/dav
+
+The reponse that we get will be something like this if a match is found: 
+[
+    {
+        "id": "61633572c5cccf9cd07dffb8",
+        "name": "David",
+        "email": "david@gmail.com",
+        "department": {
+            "departmentName": "Information Technology",
+            "locationId": "L1"
+        },
+        "subjects": null
+    }
+]
+```
+
+### Find documents using a starts with query: 
+```xml
+This is the general way to query for matches to 'start with' in mongodb
+{
+    "email" : /^gmail/
+}
+
+For  finding students using starts with query we add the following method in the student service and return it 
+public List<Student> getStudentsByNameStartsWith(String name) {
+    return studentRepository.findByNameStartsWith(name);
+}
+
+The controller class will have the following method: 
+@GetMapping("/findbynamestartswith/{name}")
+public List<Student> getStudentsByNameStartsWith(@PathVariable String name) {
+    return studentService.getStudentsByNameStartsWith(name);
+}
+
+The most important point here is the repository interface which will not have this method by default and so we need to add it as: 
+List<Student> findByNameStartsWith(String name);
+
+Next launch the REST client and fire the URL: 
+GET http://localhost:8080/api/student/findbynamestartswith/test
+
+The reponse that we get will be something like this if a match is found: 
+[
+    {
+        "id": "616497280f25e40701021de1",
+        "name": "testing",
+        "email": "someemail@gmail.com",
+        "department": null,
+        "subjects": null
+    },
+    {
+        "id": "6164972f0f25e40701021de2",
+        "name": "test",
+        "email": "someemail@gmail.com",
+        "department": null,
+        "subjects": null
+    },
+    {
+        "id": "61649c0e0f25e40701021de5",
+        "name": "test",
+        "email": "test@gmail.com",
+        "department": {
+            "departmentName": "Physics",
+            "locationId": "P1"
+        },
+        "subjects": [
+            {
+                "subjectId": "PR1",
+                "subjectName": "Physical Reaction"
+            },
+            {
+                "subjectId": "PR2",
+                "subjectName": "Physical Testing and Results"
+            }
+        ]
+    }
+]
+```
+
+
+### Reference to other collections without embedding - This method will hold the reference id in the main collection: 
+```xml
+
+If we want to reference one collection in another then we need to use the annotation as @DBRef in the source collection where you need to embed
+Eg. in our Student entity we use: 
+@DBRef
+private Department department;
+
+Also in our Department entity we add the following to indicate that it is a collection:
+@Document(collection="department")
+public class Department {
+    .....
+}
+
+Also we need to create a repository class for this collection
+@Repository
+public interface DepartmentRepository extends MongoRepository<Department,String>
+
+Finally we need to add this in our service class. For eg. during the creation of student
+
+public Student createStudent (Student student) {
+    if (student.getDepartment() != null) {
+        departmentRepository.save(student.getDepartment());
+    }
+    return studentRepository.save(student);
+}
+
+```
+
+### Writing native mongodb query
+```xml
+For finding students using native query we add the following method in the student service and return it 
+public List<Student> getStudentsByNameNativeQuery(String name) {
+    return studentRepository.findByNameNative(name);
+}
+
+The controller class will have the following method: 
+@GetMapping("/findbynamenativequery/{name}")
+public List<Student> getStudentsByNameNativeQuery(@PathVariable String name) {
+    return studentService.getStudentsByNameNativeQuery(name);
+}
+
+The most important point here is the repository interface which will not have this method by default and so we need to add it as a native query: 
+@Query("{\"name\": \"?0\"}")
+List<Student> findByNameNative(String name);
+
+Here the ?0 is the first parameter from the method which is the name field. 
+
+Next launch the REST client and fire the URL: 
+GET http://localhost:8080/api/student/findbynamenativequery/David
+
+The reponse that we get will be something like this if a match is found: 
+[
+    {
+        "id": "61633572c5cccf9cd07dffb8",
+        "name": "David",
+        "email": "david@gmail.com",
+        "department": {
+            "departmentName": "Information Technology",
+            "locationId": "L1"
+        },
+        "subjects": null
+    }
+]
+
+```
 
 ## MongoDB Clients
 ### Studio 3T (Best but license needed for commercial use)
@@ -1046,14 +1488,40 @@ The reponse that we get will be something like this if a match is found:
 ### mongorestore --db <dbname> <path-to-the-dump-file> -> This command will restore a single database 
 ### mongorestore --db <dbname> --collection <collection-name> <path-to-the-dump-file-along-with-the-bson-file-name> -> This command will restore a single collection 
 
-## MongoDB Atlas - Cloud - Free for personal use - Limited capability
+## MongoDB Atlas - Cloud - Free for personal use - Limited capability - The client we can use here is the MongoDB Compass client. 
 ```xml
 https://www.mongodb.com/cloud/atlas
 This can be easily connected with MongoDB Compass/Mongo Shell
+
+We need to create a project first, which will create a connect cluster and a database, associate user ids which can access this cluster. All this is done from the web interface of Atlas. 
+
+Once this is done we need to open our client network under the network access section and add our client external ip addrees to connect.
+
+Then we can copy our connection url from the website add it into our mongodb compass and we can connect. 
 ```
 
 ## Installing mongodb shell on Mac 
 ### brew install mongosh
+
+## MongoDB - Spring Microservices on Heroku - Check spring-mongo-cloud sample. 
+```xml
+Open an account on Heroku
+
+Download and install Heroku CLI on MAC
+brew tap heroku/brew && brew install heroku  (pre-requsite is git must be installed first)
+heroku --version -> To check the version and if heroku has been installed correctly or not
+
+Now login to Heroku and create an app (name must be unique)
+
+Next import the local document content (export it first locallay) into the MongoDB compass connected to the MongoDB Atlas (cloud)
+
+Next open the command prompt and type -> heroku login -> This will open the browser and you can login and it will log you in the CLI 
+
+Next to deploy java application on heroku type the following command -> heroku plugins:install java
+
+```
+
+
 
 ```xml
 References:   
