@@ -1505,16 +1505,21 @@ Then we can copy our connection url from the website add it into our mongodb com
 
 ## MongoDB - Spring Microservices on Heroku - Check spring-mongo-cloud sample. 
 ```xml
-Copy the same application spring-mongo-client to spring-mongo-cloud
+Export the student collection and import it on the MongoDB Atlas collection
+
+Copy the application spring-mongo-client to spring-mongo-cloud
 
 Delete the contents of the application.properties file and add the following lines: 
-spring.data.mongodb.uri=mongodb+srv://balaji:<password>@cluster0.wbmrb.mongodb.net/spring?retryWrites=true&w=majority
-server.port=${PORT:8080}
+spring.data.mongodb.uri=mongodb+srv://balaji:<password>@cluster0.wbmrb.mongodb.net/spring?retryWrites=true&w=majority -> MongoDB Atlas connection string
+server.port=${PORT:8080} -> Heroku connection port
 
 For the application to work locally first add the following arguments to the VM runtime arguments:
 -Djdk.tls.client.protocols=TLSv1.2
 
-Once the application runs successfully, create a jar file. (Eg. on eclipse maven install)
+Once the application runs successfully (check by running the rest services and calling a GET url http://localhost:8080/api/student/findall to check if data is received) , 
+create a jar file. (Eg. on eclipse maven install, on command line use mvn clean install)
+
+Also Note: The JDK version for this app has been changed from 11 to 8 as Heroku supports only 8 for free edition
 
 This url can be got from our MongoDB Atlas -> Select our project -> Connect -> Connect your application and copy the URL. Change the collection name to your collection name. 
 In my case it is spring.
@@ -1527,11 +1532,18 @@ heroku --version -> To check the version and if heroku has been installed correc
 
 Now login to Heroku and create an app (name must be unique)
 
-Next import the local document content (export it first locallay) into the MongoDB compass connected to the MongoDB Atlas (cloud)
-
 Next open the command prompt and type -> heroku login -> This will open the browser and you can login and it will log you in the CLI 
 
-Next to deploy java application on heroku type the following command -> heroku plugins:install java
+Next add the  heroku java plugin for application deployment -> heroku plugins:install java
+
+Next to deploy java application on heroku type the following command -> heroku deploy:jar spring-mongo-cloud-0.0.1-SNAPSHOT.jar --app balaji-test-app -> [Our app jar name and heroku app name that we created]
+
+Next check the app log by issuing the following command:
+heroku logs --source balaji-test-app --tail
+
+Finally if everything is fine, fire the GET request from the REST client: in my case it would be 
+GET https://balaji-test-app.herokuapp.com/api/student/findall 
+and check the response back.
 
 ```
 
