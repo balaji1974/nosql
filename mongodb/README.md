@@ -1505,6 +1505,20 @@ Then we can copy our connection url from the website add it into our mongodb com
 
 ## MongoDB - Spring Microservices on Heroku - Check spring-mongo-cloud sample. 
 ```xml
+Copy the same application spring-mongo-client to spring-mongo-cloud
+
+Delete the contents of the application.properties file and add the following lines: 
+spring.data.mongodb.uri=mongodb+srv://balaji:<password>@cluster0.wbmrb.mongodb.net/spring?retryWrites=true&w=majority
+server.port=${PORT:8080}
+
+For the application to work locally first add the following arguments to the VM runtime arguments:
+-Djdk.tls.client.protocols=TLSv1.2
+
+Once the application runs successfully, create a jar file. (Eg. on eclipse maven install)
+
+This url can be got from our MongoDB Atlas -> Select our project -> Connect -> Connect your application and copy the URL. Change the collection name to your collection name. 
+In my case it is spring.
+
 Open an account on Heroku
 
 Download and install Heroku CLI on MAC
