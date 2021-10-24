@@ -1,20 +1,64 @@
 # ElasticSearch
 
+## Installation option 1
 ```xml
-Download and install elasticsearch.
+Download and install elasticsearch from the below URL: 
+https://www.elastic.co/downloads/elasticsearch
 
-From the installation folder start the server. 
+Uzip the zip file and move it to the location of your choice. 
+Now navigate to the root of the extracted elasticsearch folder. 
+From this folder start the server by issuing the following command: 
 
-To start Elasticserch after installation
-./bin/elasticsearch
+bin/elasticsearch
 
 Note: 9200 is the default port for elasticsearch which can be changed in elasticsearch.yml file located in the config folder.
-In all the below example I have used port 9400 by changing this defult port.  
 
-Query the server status
-GET localhost:9400/ 
+We can configure many more things like apart from port settings in this yaml file like: 
+cluster name
+node name
+data file storage path
+log file storage path 
+host ip 
+
+Next we can set the JVM options in the file called jvm.options located in the config directory. 
+
+For logging propeties setting we can configure the file called log4j2.properties file located under the config directory. 
+
+Once the server is started we can query the server status with the following  url: 
+GET localhost:9200/ 
+or curl http://localhost:9200
 
 ```
+
+## Installation option 2
+```xml
+
+Directly sign up for a 14 day free trial of elastic cloud and start using it. 
+
+The sign-up url is given below: 
+https://www.elastic.co/cloud/
+
+```
+
+## Installation option 3
+```xml
+Docker Elastic Search 
+
+It can be installed by following the steps in the following URL:
+https://hub.docker.com/_/elasticsearch
+
+Commands that can be run for docker install are: 
+docker pull elasticsearch:7.14.2 -> latest is not supported and we need to use specific tag for elastic
+docker network create somenetwork -> where somenetwork will be replaced with our own network name
+docker run -d --name elasticsearch --net somenetwork -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" elasticsearch:7.14.2
+
+
+For production grade installation (multinode) follow the instructions given in the below url:
+https://www.elastic.co/guide/en/elasticsearch/reference/7.5/docker.html 
+
+```
+
+
 
 ### Node, Cluster, Shard & Replica -> Same concept as other databases 
 ```xml
@@ -22,29 +66,58 @@ Node -> Single machine running elastic search
 Cluster -> Set of mulitple nodes running togther
 Shard -> Index horizontally partitioned across nmulitple nodes
 Replica -> Data in a shared being replicated across nodes for fault tolerance  
+Documents -> Data is stored in documents as json objects
+Index -> It is a collection of related documents 
 ```
 
-## Index
+## Index 
 ### An index is like a ‘database' in a relational database. 
 ```xml
 RDBMS => Databases => Tables => Columns/Rows
 Elasticsearch => Indices => Types => Documents with Properties
-Eg. http://localhost:9400/review/doc 
+Eg. http://localhost:9200/review/doc 
 In the above url the index (database) is 'review' and type (table) is 'doc'
 
 Note: Type concept is now deprecated and we can use the following url instead 
-http://localhost:9400/review/_doc
+http://localhost:9200/review/_doc
  ```
 
-## Display all the index in elasticsearch
+## Useful commands (run them from Kibana dev tools console)
 ```xml
-GET http://localhost:9400/_cat/indices
+
+Since all the below commands are run from the Kibana dev tools console I will be omiting the http://localhost:9200/ and Kibana will add it to all my requests
+But if we use the same commands from postman/curl please be sure to append http://localhost:9200/ to all the below commands 
+If we copy the below command from dev tools as a curl command, the full URL is appended with the curl request automatically. 
+
+Here all underscore (_) referes to the APIs that we are calling and the other part refers to the command we are running. 
+For eg. In the below request cluster is the API that we are calling and health is the command we are running against this API. 
+
+GET _cluster/health -> This will display the clusters health status 
+GET _cat/nodes -> This will list the information of the nodes 
+GET _cat/nodes?v -> Same command as above with descriptive header information 
+GET _nodes -> Retreive more complete node information 
+GET _cat/indices -> Display all the indices in elasticsearch
+
+Leading dot (.) in indices will help us to hide the index within the node (eg. .kibana_7.15.1_001)
+
 ```
+## Sharding 
+```xml
+This is a process by which an index is split into mulitple indices 
+The reason for this is to run the search query in parallel - for optimization 
+and data storage to be managed in chunks on mulitple nodes
+
+A default shard for an index is 1 and a decent number for millions of documents in an index is 5 
+A shard can be split or shrunk and we have elasticsearch apis for each of this operation. 
+
+```
+
+
 
 ## Mapping
 ### Mapping is the process of defining how a document, and the fields it contains, are stored and indexed, like DDL in RDBMS
 ```xml
-GET http://localhost:9400/review 
+GET http://localhost:9200/review 
  -> This will get the mapping of the given index (review in our case)
 ```
 
@@ -82,7 +155,7 @@ https://www.elastic.co/guide/en/elasticsearch/reference/7.1/mapping-types.html#_
 
 ## Create a index from a mapping file (structure of a database table in RDBMS)
 ```xml
-PUT http://localhost:9400/ml-ratings
+PUT http://localhost:9200/ml-ratings
 BODY
 {
 	"mappings" : {
@@ -103,7 +176,7 @@ BODY
 	}
 }
 
-PUT http://localhost:9400/ml-tags
+PUT http://localhost:9200/ml-tags
 BODY
 {
 	"mappings" : {
@@ -131,7 +204,7 @@ Here the "all" field will have values from title, genres and tag field because w
 
 ### Insert data 
 ```xml
-POST http://localhost:9400/review/_doc
+POST http://localhost:9200/review/_doc
 BODY <sample data - in the  body of the request>
 {
     "id": 0,
@@ -173,10 +246,10 @@ BODY <sample data - in the  body of the request>
 
 ### Search Query DSL 
 ```xml
-GET http://localhost:9400/review/_search 
+GET http://localhost:9200/review/_search 
  -> Will result in all records being returned
 
-GET http://localhost:9400/review/_search
+GET http://localhost:9200/review/_search
 BODY 
 {
   "query": {
@@ -325,15 +398,15 @@ Eg.
 }
 
 Sort data based on a field
-GET http://localhost:9400/review/_search?sort=price
+GET http://localhost:9200/review/_search?sort=price
 	-> Will sort retreived data based on the field price 
 
 Search based on id
-GET http://localhost:9400/review/_doc/<id>
+GET http://localhost:9200/review/_doc/<id>
 	-> Will retreive the data based on the id field 
 
 Count no. of records in the index
-GET http://localhost:9400/review/_count 
+GET http://localhost:9200/review/_count 
 	-> Will count the records in the index 'review'
 
 It can be combined with the BODY tag used in the _search end-point to filter data and count
@@ -401,9 +474,11 @@ Metrics
 
 ## Kibana
 ```xml
-Download and install Kibana from https://www.elastic.co/downloads/kibana
+Download and unzip Kibana from https://www.elastic.co/downloads/kibana or https://www.elastic.co/start
+Move it to a folder of your choice
 
-Start Kibana from the folder ./bin/kibana
+Start Kibana from the root installation folder of kibana by executing the following command:
+bin/kibana
 
 This will autoconnect to Elasticsearch provide it started in the default port of 9200
 
@@ -412,7 +487,7 @@ Now use the browser to connect to Kibana using the url http://localhost:5601/
 Next click on "Add Data" and enter
 ```
 
-##Logstash
+## Logstash
 ```xml
 Download and install logstash from https://www.elastic.co/downloads/logstash
 
