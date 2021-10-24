@@ -487,6 +487,8 @@ https://reflectoring.io/spring-boot-elasticsearch/
 https://www.elastic.co/blog/
 https://reflectoring.io/spring-boot-elasticsearch/
 https://mkyong.com/spring-boot/spring-boot-spring-data-elasticsearch-example/
+https://github.com/codingexplained/complete-guide-to-elasticsearch
+https://www.udemy.com/course/elasticsearch-complete-guide/learn/lecture/7373340
 ```
 
 
