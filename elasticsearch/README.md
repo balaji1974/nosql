@@ -108,10 +108,19 @@ The reason for this is to run the search query in parallel - for optimization
 and data storage to be managed in chunks on mulitple nodes
 
 A default shard for an index is 1 and a decent number for millions of documents in an index is 5 
-A shard can be split or shrunk and we have elasticsearch apis for each of this operation. 
+A shard can be split or shrink and we have elasticsearch apis for each of this operation. 
 
 ```
 
+## Replication
+```xml
+Replication works by creating copies of shards
+A shard that has been replicated is called a primary shard
+Primary and secondary shards are together called as replication groups
+No. of replicas can be configured at index creating time
+One is the default value for a replica 
+
+```
 
 
 ## Mapping
