@@ -110,6 +110,8 @@ and data storage to be managed in chunks on mulitple nodes
 A default shard for an index is 1 and a decent number for millions of documents in an index is 5 
 A shard can be split or shrink and we have elasticsearch apis for each of this operation. 
 
+GET /_cat/shards?v -> This will display all the shards in the cluster
+
 ```
 
 ## Replication
@@ -119,6 +121,50 @@ A shard that has been replicated is called a primary shard
 Primary and secondary shards are together called as replication groups
 No. of replicas can be configured at index creating time
 One is the default value for a replica 
+
+No replica shard is stored on the same node as the primary shard
+
+A replica shard increases the query performance where workload is placed on the replica or the primary shard based on the load on the nodes. 
+
+Best practise is to replicate a shard twice atleast and add a minimum of 3 nodes to the elastic cluster. The more the better. 
+
+```
+
+## Snapshots 
+```xml
+Elasticsearch supports snapshots of data to be taken as backups
+While replication is live, snapshots are an instance of time. 
+
+```
+
+## Running multiple elastic nodes from the same machine (for development purpose only)
+```xml
+First way
+---------
+Copy the elastic folder into another folder and change the node.name, path.data and path.logs in the elasticsearch.yaml file located inside the config folder.
+Now start the new node.
+
+Second way (not an ideal way and first approach is better)
+----------
+Start elastic with the following command:
+bin/elasticsearch -Enode.name=node-2 -Epath.data=./node-2/data -Epath.logs=./node-2/log -> This will override the default setting in the elasticsearch.yaml file. 
+
+Third way (use cloud solution but needs subscription)
+---------
+
+
+```
+
+## Types of nodes (roles that they play)
+```xml
+Master node: Responsible for creating and deleting index. Dedicated master nodes are useful for large clusters.
+Data node: Responsile for storing data and peforming search queries on this data. 
+Ingest node: Enables nodes to run ingest pipleline which are series of steps that are performed when indexing documents (simplified version of Logstash)
+Machine learning node: node.ml if set to true will enable a node to run machine learning jobs, xpack.ml.enabled if set will enable the machine learning API for the node
+Coordination node: Responsible for distribution of quries and aggregation of results
+Voting-only node: Will process in the voting process of new master node 
+
+Note: Modifying the default roles of a node is done only for large clusters. 
 
 ```
 
@@ -572,7 +618,7 @@ https://www.elastic.co/blog/
 https://reflectoring.io/spring-boot-elasticsearch/
 https://mkyong.com/spring-boot/spring-boot-spring-data-elasticsearch-example/
 https://github.com/codingexplained/complete-guide-to-elasticsearch
-https://www.udemy.com/course/elasticsearch-complete-guide/learn/lecture/7373340
+https://www.udemy.com/course/elasticsearch-complete-guide/
 ```
 
 
