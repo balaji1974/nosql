@@ -141,7 +141,7 @@ While replication is live, snapshots are an instance of time.
 ```xml
 First way
 ---------
-Copy the elastic folder into another folder and change the node.name, path.data and path.logs in the elasticsearch.yaml file located inside the config folder.
+Either opy the elastic folder into another folder or make another duplicate elasticsearch.yaml file and change the node.name, path.data and path.logs in the elasticsearch.yaml file. This file is located inside the config folder.
 Now start the new node.
 
 Second way (not an ideal way and first approach is better)
@@ -149,9 +149,9 @@ Second way (not an ideal way and first approach is better)
 Start elastic with the following command:
 bin/elasticsearch -Enode.name=node-2 -Epath.data=./node-2/data -Epath.logs=./node-2/log -> This will override the default setting in the elasticsearch.yaml file. 
 
-Third way (use cloud solution but needs subscription)
+Third way 
 ---------
-
+Use cloud solution but needs subscription
 
 ```
 
@@ -178,6 +178,24 @@ GET http://localhost:9200/review
 
 ## Create Index without mapping
 ```xml
+
+Simple index (from Kibana)
+PUT /pages
+
+Simple index with 2 shards and 2 replicas
+PUT /products
+{
+  "settings" : {
+    "number_of_shards": 2,
+    "number_of_replicas": 2
+  }
+
+}
+```
+
+## Putting document to an Index 
+```xml
+Creating a document 
 http://localhost:9200/review/_doc
 POST
 {
@@ -198,7 +216,37 @@ POST
     "active" : true
 }
 
+Creating a document with id where 50 is the id for the document. 
+http://localhost:9200/review/_doc/50
+POST
+{
+    "id": 0,
+    "country": "Italy",
+    "description": "Aromas include tropical fruit, broom, brimstone and dried herb. The palate isn't overly expressive, offering unripened apple, citrus and dried sage alongside brisk acidity.",
+    "designation": "Vulkà Bianco",
+    "points": 87,
+    "price": 0.0,
+    "province": "Sicily & Sardinia",
+    "region_1": "Etna",
+    "region_2": "",
+    "taster_name": "Kerin O’Keefe",
+    "taster_twitter_handle": "@kerinokeefe",
+    "title": "Nicosia 2013 Vulkà Bianco  (Etna)",
+    "variety": "White Blend",
+    "winery": "Nicosia",
+    "active" : true
+}
+
+
 ```
+
+## Delete Index
+
+```xml
+(from Kibana)
+DELETE /pages
+```
+
 
 ## Documents 
 ### These are the actual records that are stored inside an index, they are like rows inside a table in RDBMS
