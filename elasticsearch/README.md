@@ -193,8 +193,28 @@ PUT /products
 }
 ```
 
-## Putting document to an Index 
+## Putting document to an Index or 'Indexing a document'
 ```xml
+Simple document - in Kibana console, 
+Index will be created automatically if not exist. 
+This setting can be overridden by the flag action.auto_create_index=false.  
+POST /products/_doc
+{
+  "name": "coffee maker",
+  "price": 47,
+  "in_stock": 27
+}
+
+Create an document with ID within a index. 
+Note the header, it must be PUT instead of POST and the id of the document would be 100
+PUT /products/_doc/100
+{
+  "name": "toaster",
+  "price": 15,
+  "in_stock": 92
+}
+
+
 Creating a document 
 http://localhost:9200/review/_doc
 POST
@@ -347,8 +367,34 @@ BODY <sample data - in the  body of the request>
   }
 ```
 
+### Update data
+```xml
+POST /products/_update/100
+{
+  "doc" : {
+    "in_stock": 92
+  }
+  
+}
+-> This updates the in_stock field for document with index 100 
+
+POST /products/_update/100
+{
+  "doc" : {
+    "tags" : ["electronics"]
+  }
+  
+}
+-> This adds a new field called tags to the index 'products' with document id 100 
+
+```
+
 ### Search Query DSL 
 ```xml
+
+GET /products/_doc/100 -> This will retreive the document in index 'products' with an id whose value is 100 
+
+
 GET http://localhost:9200/review/_search 
  -> Will result in all records being returned
 
