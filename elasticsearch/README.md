@@ -367,7 +367,7 @@ BODY <sample data - in the  body of the request>
   }
 ```
 
-### Update data
+### Update data - Elastic search documents are immutable. While updating a new document it is reterived first, fields updated and re-indexed (replaced) with the same id.  
 ```xml
 POST /products/_update/100
 {
@@ -388,6 +388,88 @@ POST /products/_update/100
 -> This adds a new field called tags to the index 'products' with document id 100 
 
 ```
+
+### Scripted Update / In-line update  
+```xml
+POST /products/_update/100
+{
+  "script": {
+    "source": "ctx._source.in_stock--"
+  }
+}
+-> This updates from the present context (ctx) inside the source document (_souce) and reduces the in_stock quantity by 1
+
+POST /products/_update/100
+{
+  "script": {
+    "source":  "ctx._source.in_stock=50"
+  }
+}
+-> Same as above but here the in_stock value has been updated to value 50 
+
+POST /products/_update/100
+{
+  "script": {
+    "source":  "ctx._source.in_stock -= params.quantity",
+    "params" : {
+      "quantity": 5
+    }
+  }
+}
+-> The above reduces the in_stock value by the quantity given in the params (parameter)
+
+POST /products/_update/100
+{
+  "script": {
+    "source":  """
+      if (ctx._source.in_stock == 0)  {
+        ctx.op='noop';
+      }
+      ctx._source.in_stock--;
+    """
+    
+  }
+}
+-> This will not perfrom anything if the in_stock is 0 but will reduce the in_stock by 1 otherwise. 
+Here instead of 'noop' if we use 'delete' then it will delete the document if the matching condition is true.  
+
+```
+
+### Upsert - Insert or update 
+```xml
+POST /products/_update/101
+{
+  "script": {
+    "source":  "ctx._source.in_stock++"
+  },
+  "upsert" : {
+      "name" : "computer",
+      "price" : 900,
+      "in_stock" : 105
+  }
+}
+
+-> This will insert a new document if the document 101 is not present. If present it will update the in_stock and increases it by 1 
+```
+
+### Replcate existing document
+```xml
+PUT /products/_doc/100
+{
+  "name": "toaster",
+  "price": 49,
+  "in_stock": 92
+}
+-> This will replace the existing document with id 100 with new values given in the body  
+```
+
+### Deleteing documents
+```xml
+DELETE /products/_doc/101
+-> This will delete the document that has the id 101  
+```
+
+## Routing - > This is a process of resolving the shard for a document 
 
 ### Search Query DSL 
 ```xml
