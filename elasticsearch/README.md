@@ -199,6 +199,13 @@ Optimistic concurrency control: Process by which operations are sequenced by the
 
 ```
 
+## Bulk API for inserting data
+```xml
+curl -H "Content-Type: application/x-ndjson" -XPOST http://localhost:9200/products/_bulk --data-binary "@products-bulk.json"
+-> Please check the products-bulk.json file for data that is being inserted. 
+If curl is not present download and install it from the below url: 
+https://curl.se/download.html
+```
 
 ## Mapping
 ### Mapping is the process of defining how a document, and the fields it contains, are stored and indexed, like DDL in RDBMS
