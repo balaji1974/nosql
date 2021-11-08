@@ -2,7 +2,7 @@
 
 ## Installation option 1
 ```xml
-Download and install elasticsearch from the below URL: 
+Download and install Elasticsearch from the below URL: 
 https://www.elastic.co/downloads/elasticsearch
 
 Uzip the zip file and move it to the location of your choice. 
@@ -11,7 +11,7 @@ From this folder start the server by issuing the following command:
 
 bin/elasticsearch
 
-Note: 9200 is the default port for elasticsearch which can be changed in elasticsearch.yml file located in the config folder.
+Note: 9200 is the default port for Elasticsearch which can be changed in elasticsearch.yml file located in the config folder.
 
 We can configure many more things like apart from port settings in this yaml file like: 
 cluster name
@@ -22,7 +22,7 @@ host ip
 
 Next we can set the JVM options in the file called jvm.options located in the config directory. 
 
-For logging propeties setting we can configure the file called log4j2.properties file located under the config directory. 
+For logging properties setting we can configure the file called log4j2.properties file located under the config directory. 
 
 Once the server is started we can query the server status with the following  url: 
 GET localhost:9200/ 
@@ -35,7 +35,7 @@ or curl http://localhost:9200
 
 Directly sign up for a 14 day free trial of elastic cloud and start using it. 
 
-The sign-up url is given below: 
+The sign-up URL is given below: 
 https://www.elastic.co/cloud/
 
 ```
@@ -53,20 +53,18 @@ docker network create somenetwork -> where somenetwork will be replaced with our
 docker run -d --name elasticsearch --net somenetwork -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" elasticsearch:7.14.2
 
 
-For production grade installation (multinode) follow the instructions given in the below url:
+For production grade installation (multi-node) follow the instructions given in the below url:
 https://www.elastic.co/guide/en/elasticsearch/reference/7.5/docker.html 
 
 ```
 
-
-
 ### Node, Cluster, Shard & Replica -> Same concept as other databases 
 ```xml
 Node -> Single machine running elastic search 
-Cluster -> Set of mulitple nodes running togther
-Shard -> Index horizontally partitioned across nmulitple nodes
+Cluster -> Set of multiple nodes running together
+Shard -> Index horizontally partitioned across multiple nodes
 Replica -> Data in a shared being replicated across nodes for fault tolerance  
-Documents -> Data is stored in documents as json objects
+Documents -> Data is stored in documents as JSON objects
 Index -> It is a collection of related documents 
 ```
 
@@ -85,30 +83,30 @@ http://localhost:9200/review/_doc
 ## Useful commands (run them from Kibana dev tools console)
 ```xml
 
-Since all the below commands are run from the Kibana dev tools console I will be omiting the http://localhost:9200/ and Kibana will add it to all my requests
+Since all the below commands are run from the Kibana dev tools console I will be omitting the http://localhost:9200/ and Kibana will add it to all my requests
 But if we use the same commands from postman/curl please be sure to append http://localhost:9200/ to all the below commands 
 If we copy the below command from dev tools as a curl command, the full URL is appended with the curl request automatically. 
 
-Here all underscore (_) referes to the APIs that we are calling and the other part refers to the command we are running. 
+Here all underscore (_) refers to the APIs that we are calling and the other part refers to the command we are running. 
 For eg. In the below request cluster is the API that we are calling and health is the command we are running against this API. 
 
 GET _cluster/health -> This will display the clusters health status 
 GET _cat/nodes -> This will list the information of the nodes 
 GET _cat/nodes?v -> Same command as above with descriptive header information 
-GET _nodes -> Retreive more complete node information 
-GET _cat/indices -> Display all the indices in elasticsearch
+GET _nodes -> Retrieve more complete node information 
+GET _cat/indices -> Display all the indices in Elasticsearch
 
 Leading dot (.) in indices will help us to hide the index within the node (eg. .kibana_7.15.1_001)
 
 ```
 ## Sharding 
 ```xml
-This is a process by which an index is split into mulitple indices 
+This is a process by which an index is split into multiple indices 
 The reason for this is to run the search query in parallel - for optimization 
-and data storage to be managed in chunks on mulitple nodes
+and data storage to be managed in chunks on multiple nodes
 
 A default shard for an index is 1 and a decent number for millions of documents in an index is 5 
-A shard can be split or shrink and we have elasticsearch apis for each of this operation. 
+A shard can be split or shrink and we have Elasticsearch APIs for each of this operation. 
 
 GET /_cat/shards?v -> This will display all the shards in the cluster
 
@@ -126,7 +124,7 @@ No replica shard is stored on the same node as the primary shard
 
 A replica shard increases the query performance where workload is placed on the replica or the primary shard based on the load on the nodes. 
 
-Best practise is to replicate a shard twice atleast and add a minimum of 3 nodes to the elastic cluster. The more the better. 
+Best practice is to replicate a shard twice atleast and add a minimum of 3 nodes to the elastic cluster. The more the better. 
 
 ```
 
@@ -158,13 +156,46 @@ Use cloud solution but needs subscription
 ## Types of nodes (roles that they play)
 ```xml
 Master node: Responsible for creating and deleting index. Dedicated master nodes are useful for large clusters.
-Data node: Responsile for storing data and peforming search queries on this data. 
-Ingest node: Enables nodes to run ingest pipleline which are series of steps that are performed when indexing documents (simplified version of Logstash)
+Data node: Responsible for storing data and performing search queries on this data. 
+Ingest node: Enables nodes to run ingest pipeline which are series of steps that are performed when indexing documents (simplified version of Logstash)
 Machine learning node: node.ml if set to true will enable a node to run machine learning jobs, xpack.ml.enabled if set will enable the machine learning API for the node
-Coordination node: Responsible for distribution of quries and aggregation of results
+Coordination node: Responsible for distribution of queries and aggregation of results
 Voting-only node: Will process in the voting process of new master node 
 
 Note: Modifying the default roles of a node is done only for large clusters. 
+
+```
+
+## How Elasticsearch reads data (Single document and not how search queries work)
+```xml
+Steps: 
+1. Coordinating node -> Node which receives the initial read request from the client 
+2. Routing -> Next routing happens, which is a process where it resolves to a shard that stores the document 
+3. Adaptive replication selection -> This is where a shard is selected from the replication group 
+4. Request is sent to the selected shard and the response is collected by the coordinating node and sent back to the client. 
+
+```
+
+## How Elasticsearch writes data 
+```xml
+Steps: 
+1. Coordinating node -> Node which receives the initial write request from the client 
+2. Routing -> Next routing happens, which is a process where it resolves to the primary shard that needs to store the document 
+3. Primary Shard -> This will validate the structure and the field values of the request 
+4. Forward the write to replica shards -> Primary shard performs the write operation before forwarding the request to the replication shards
+
+```
+
+## Other concepts: 
+```xml
+Primary terms: A way to distinguish between old and new primary shards by maintaining a counter 
+which holds the value of how many times the primary shard had been changed 
+Sequence number: A counter that is incremented for each write operation until the primary shard changes 
+Global check point: Sequence number that exist for each replication group 
+Local check point: Sequence number that exist for each replica shard 
+_version: Elasticsearch maintains the version field (incrementing integer) for every document that changes -> This is internal versioning 
+External versioning: This is a manual versioning of documents which is controlled by client
+Optimistic concurrency control: Process by which operations are sequenced by the order in which they are sent by the client -> Old approach and not used any more
 
 ```
 
@@ -430,7 +461,7 @@ POST /products/_update/100
     
   }
 }
--> This will not perfrom anything if the in_stock is 0 but will reduce the in_stock by 1 otherwise. 
+-> This will not perform anything if the in_stock is 0 but will reduce the in_stock by 1 otherwise. 
 Here instead of 'noop' if we use 'delete' then it will delete the document if the matching condition is true.  
 
 ```
@@ -452,7 +483,21 @@ POST /products/_update/101
 -> This will insert a new document if the document 101 is not present. If present it will update the in_stock and increases it by 1 
 ```
 
-### Replcate existing document
+### Update by query - multiple documents   
+```xml
+POST /products/_update_by_query 
+{
+  "script": {
+    "source":  "ctx._source.in_stock++"
+  },
+  "query": {
+    "match_all": {}
+  }
+}
+-> This will match all documents and increase the in_stock by 1 
+```
+
+### Replicate existing document
 ```xml
 PUT /products/_doc/100
 {
@@ -463,18 +508,31 @@ PUT /products/_doc/100
 -> This will replace the existing document with id 100 with new values given in the body  
 ```
 
-### Deleteing documents
+### Deleting documents
 ```xml
 DELETE /products/_doc/101
 -> This will delete the document that has the id 101  
 ```
 
+### Deleting documents by query 
+```xml
+POST /products/_delete_by_query 
+{
+  "query": {
+    "match_all": {}
+  }
+}
+-> This will delete all the documents in the given index   
+```
+
 ## Routing - > This is a process of resolving the shard for a document 
+### shard_num = hash(_routing) % num_primary_shards
+
 
 ### Search Query DSL 
 ```xml
 
-GET /products/_doc/100 -> This will retreive the document in index 'products' with an id whose value is 100 
+GET /products/_doc/100 -> This will retrieve the document in index 'products' with an id whose value is 100 
 
 
 GET http://localhost:9200/review/_search 
@@ -540,8 +598,8 @@ BODY
     }
   }
 } 
-	-> This ia a range query that matchs price between 12 and 17 both incluive, 
-	-> if we need to exclued 12 and 17 use gt and lt instead 
+	-> This is a range query that matches price between 12 and 17 both inclusive, 
+	-> if we need to exclude 12 and 17 use gt and lt instead 
 
 BODY
 {
@@ -572,7 +630,7 @@ BODY
     }
   }
 }
-	-> This will match the query expression where fields are sepeated by + 
+	-> This will match the query expression where fields are separated by + 
 
 BODY - Syntax for boolean query
 {
@@ -654,7 +712,7 @@ Syntax
 	"aggregations" : { … }
 }
 
-Types of aggreation are: Bucketing, Metrics, Matrix & Pipeline
+Types of aggregation are: Bucketing, Metrics, Matrix & Pipeline
 
 Bucketing
 {
@@ -694,14 +752,14 @@ Metrics
         }
     }
 }
-	-> This will group on "points" and perfom std stats operation like count, min, max, avg and sum on "price" 
+	-> This will group on "points" and perform std stats operation like count, min, max, avg and sum on "price" 
 
 ```
 
 ## ELK - Elastic, Logstash, Kibana
 ### Elastic - Database engine built on top of Apache Lucene
 ### Logstash - Tool for data collection, transformation and transportation pipeline
-### Kibana - Data visulization and analytics platform 
+### Kibana - Data visualization and analytics platform 
 
 ## Kibana
 ```xml
@@ -711,7 +769,7 @@ Move it to a folder of your choice
 Start Kibana from the root installation folder of kibana by executing the following command:
 bin/kibana
 
-This will autoconnect to Elasticsearch provide it started in the default port of 9200
+This will auto connect to Elasticsearch provide it started in the default port of 9200
 
 Now use the browser to connect to Kibana using the url http://localhost:5601/
 
@@ -727,7 +785,7 @@ Start Logstash from the folder by running the following sample pipeline:
 
 ```
 
-##Sample data to work with for practise
+##Sample data to work with for practice
 ```xml
 Download the sample file "complete.es.json"
 
@@ -765,7 +823,7 @@ PUT http://localhost:9200/ufo
 	}
 }
 
-Upload the file into elasticsearch using the following command:
+Upload the file into Elasticsearch using the following command:
 curl -XPOST 'localhost:9200/_bulk?pretty' -H "Content-Type: application/json" --data-binary @complete.es.json
 
 Count the records that were upload:
