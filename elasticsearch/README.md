@@ -609,6 +609,13 @@ Result would be
 }
 
 An Inverted index is a mapping between terms and which document contains them 
+Eg.
+            Document #1     Document #2     Document #3
+ducks           X                                X
+test            X               X
+data                            X                X
+
+
 
 ```
 
