@@ -535,6 +535,83 @@ POST /products/_delete_by_query
 ## Routing - > This is a process of resolving the shard for a document 
 ### shard_num = hash(_routing) % num_primary_shards
 
+## Text Analysis
+```xml
+The process of text analysis: 
+Document ----> Analyzer (Character Filter, Tokenizer, Token Filters) ----> Storage  
+
+The standard analyzer of Elasticsearch applies no character filter, applies standard tokenizer, and finally applies lower case tokenizer 
+
+POST /_analyze 
+{
+  "text" : "this is my Test text.....DUCKS !!!!",
+  "char_filter": [], 
+  "analyzer": "standard",
+  "filter": ["lowercase"]
+}
+
+The above is same as specifying
+POST /_analyze 
+{
+  "text" : "this is my Test text.....DUCKS !!!!",
+}
+since the below are all default values to an analyzer 
+"char_filter": [], 
+"analyzer": "standard",
+"filter": ["lowercase"]
+
+Result would be  
+{
+  "tokens" : [
+    {
+      "token" : "this",
+      "start_offset" : 0,
+      "end_offset" : 4,
+      "type" : "<ALPHANUM>",
+      "position" : 0
+    },
+    {
+      "token" : "is",
+      "start_offset" : 5,
+      "end_offset" : 7,
+      "type" : "<ALPHANUM>",
+      "position" : 1
+    },
+    {
+      "token" : "my",
+      "start_offset" : 8,
+      "end_offset" : 10,
+      "type" : "<ALPHANUM>",
+      "position" : 2
+    },
+    {
+      "token" : "test",
+      "start_offset" : 11,
+      "end_offset" : 15,
+      "type" : "<ALPHANUM>",
+      "position" : 3
+    },
+    {
+      "token" : "text",
+      "start_offset" : 16,
+      "end_offset" : 20,
+      "type" : "<ALPHANUM>",
+      "position" : 4
+    },
+    {
+      "token" : "ducks",
+      "start_offset" : 25,
+      "end_offset" : 30,
+      "type" : "<ALPHANUM>",
+      "position" : 5
+    }
+  ]
+}
+
+An Inverted index is a mapping between terms and which document contains them 
+
+```
+
 
 ### Search Query DSL 
 ```xml
