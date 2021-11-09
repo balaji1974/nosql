@@ -207,9 +207,29 @@ If curl is not present download and install it from the below url:
 https://curl.se/download.html
 ```
 
+## Data types:
+```xml
+
+Commonly used data types: 
+boolean, short, integer, long, float, double, text, date, object (used for storing any JSON object) 
+
+Specialized data types:
+geo_point, ip, nested (used for storing nested JSON object), exact (used for exact matching of values - sorting,filtering & aggregations)
+
+Reference: 
+https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html
+
+```
+
+
 ## Mapping
 ### Mapping is the process of defining how a document, and the fields it contains, are stored and indexed, like DDL in RDBMS
+
 ```xml
+Mapping defines the structure of a document, i.e., their fields and structures - same as Schema in RDBMS 
+Explicit mapping -> we define field mappings ourselves.
+Dynamic mapping -> ElasticSearch does the field mapping for us. 
+
 GET http://localhost:9200/review 
  -> This will get the mapping of the given index (review in our case)
 ```
@@ -608,14 +628,40 @@ Result would be
   ]
 }
 
-An Inverted index is a mapping between terms and which document contains them 
+An Inverted index is a mapping between terms and which document contains them
+It is sorted alphabetically and contains other information like relevance score also 
+It is created for each text field within an index 
 Eg.
             Document #1     Document #2     Document #3
-ducks           X                                X
+data            X                                X
 test            X               X
-data                            X                X
+ducks                           X                X
 
 
+Keyword data types use the keyword analyzer -> This analyzer is a no op analyzer, i.e., it will not do anything but return the same input value back. 
+Eg. 
+POST /_analyze 
+{
+  "text" : "this is my Test text.....DUCKS !!!!",
+  "analyzer": "keyword"
+}
+
+This will return 
+{
+  "tokens" : [
+    {
+      "token" : "this is my Test text.....DUCKS !!!!",
+      "start_offset" : 0,
+      "end_offset" : 35,
+      "type" : "word",
+      "position" : 0
+    }
+  ]
+}
+Use case example for the keyword type is an email address field where an exact match is required.
+
+Coercion
+It is a process where the correct datatype is applied for a string value that is supplied automatically by ElasticSearch  
 
 ```
 
@@ -876,11 +922,46 @@ Start Logstash from the folder by running the following sample pipeline:
 
 ```
 
-##Sample data to work with for practice
+## Sample data to work with for practice
 ```xml
 Download the sample file "complete.es.json"
+```
 
-Create a mapping
+## Create a mapping
+
+```xml
+PUT /review 
+{
+  "mappings": {
+    "properties": {
+      "rating": {"type": "float"},
+      "content": { "type": "text"},
+      "product_id" :{"type": "integer"},
+      "author": {
+        "properties": {
+          "first_name" : { "type": "text"},
+          "last_name" : {"type" : "text"},
+          "email" : {"type" : "keyword" }
+        }
+      }
+    }
+  }
+}
+
+Inserting data into the mapping created above: 
+PUT /review/_doc/1
+{
+  "rating": 5.1,
+  "content": "This is a nice data that we checked and verified",
+  "product_id" : 129,
+  "author": {
+    "first_name" : "Balaji",
+    "last_name" : "Thiagarajan",
+    "email" : "thiagarajan.balaji@gmail.com"
+  }
+}
+
+
 PUT http://localhost:9200/ufo
 {
 	"mappings" : {
@@ -922,7 +1003,18 @@ GET http://localhost:9200/ufo/_count
 
 ```
 
+## Retrieve mapping 
+```xml
+GET /review/_mapping
 
+```
+
+## Retrieve field mapping 
+```xml
+GET /review/_mapping/field/content
+GET /review/_mapping/field/author.email
+
+```
 
 
 ## Springboot with Elasticsearch
