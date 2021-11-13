@@ -1057,8 +1057,183 @@ PUT /review/_doc/3
   }
 }
 
+UTC offset
+PUT /review/_doc/4
+{
+  "rating": 5.0,
+  "content": "Incredible!",
+  "product_id": 123,
+  "created_at": "2015-01-28T09:21:51+01:00",
+  "author": {
+    "first_name": "Adam",
+    "last_name": "Jones",
+    "email": "adam.jones@example.com"
+  }
+}
+
+Timestamp since epoc - Long format
+PUT /review/_doc/5
+{
+  "rating": 4.5,
+  "content": "Very useful",
+  "product_id": 123,
+  "created_at": 1436011284000,
+  "author": {
+    "first_name": "Taylor",
+    "last_name": "West",
+    "email": "twest@example.com"
+  }
+}
+
 ```
 
+## Parameters in Mapping
+```xml
+format - Used for formatting the date field
+properties - Defines nested fields for objects and nested fields
+coerce - used of enable/disable coercion of values - if used in mapping Strings will be coerced to numbers and Floating points will be truncated for integer values.
+doc_values - It is an uninverted "inverted" index
+norms - normalization factor used for relevance scoring (can be disabled if not needed)
+index - field can be disbaled or enabled for indexing
+null_value - used for replcating null value with another value 
+copy_to - used to copy multiple values into group field 
+```
+
+## Reindexing document
+```xml
+POST /_reindex
+{
+  "source": {
+    "index": "review"
+  },
+  "dest": {
+    "index": "review_new"
+  },
+  "script": {
+    "source": """
+      if (ctx._source.product_id != null) {
+        ctx._source.product_id = ctx._source.product_id.toString();
+      }
+    """
+  }
+}
+->Here we re-indexed the document to a new index and we transformed the product id to a string field from an existing integer field.
+
+We can also match some fields in the souce and bring them to the re-indexed document (this is done by _source on the "source" parameter)
+POST /_reindex
+{
+  "source": {
+    "index": "review",
+    "_source": ["content", "created_at", "rating"]
+  },
+  "dest": {
+    "index": "review_new"
+  }
+}
+```
+
+## Creating field alias
+```xml
+PUT /review/_mapping
+{
+  "properties": {
+    "comment": {
+      "type": "alias",
+      "path": "content"
+    }
+  }
+}
+-> where path points to the original field and "comment" is the new alias field pointing to content field 
+```
+
+## Multifield index
+```xml
+PUT /multi_field_test
+{
+  "mappings": {
+    "properties": {
+      "description": {
+        "type": "text"
+      },
+      "ingredients": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword"
+          }
+        }
+      }
+    }
+  }
+}
+
+Regular query 
+GET /multi_field_test/_search
+{
+  "query": {
+    "match": {
+      "ingredients": "Spaghetti"
+    }
+  }
+}
+
+And to query using keyword mapping
+GET /multi_field_test/_search
+{
+  "query": {
+    "term": {
+      "ingredients.keyword": "Spaghetti"
+    }
+  }
+}
+```
+
+## Index template
+```xml
+PUT /_template/access-logs
+{
+  "index_patterns": ["access-logs-*"],
+  "settings": {
+    "number_of_shards": 2,
+    "index.mapping.coerce": false
+  }, 
+  "mappings": {
+    "properties": {
+      "@timestamp": {
+        "type": "date"
+      },
+      "url.original": {
+        "type": "keyword"
+      },
+      "http.request.referrer": {
+        "type": "keyword"
+      },
+      "http.response.status_code": {
+        "type": "long"
+      }
+    }
+  }
+}
+```
+
+## Elastic common schema
+```xml
+Standard system logs from different webservers, operating system metrics etc can be stored using ECS as it contains readymade data structures for them
+```
+
+## Elasticsearch dynamic mapping
+```xml
+
+Mapping of Json to Elasticsearch type: 
+--------------------------------------
+String -> text (with keyword mapping) / date / float or long
+integer -> long
+float -> float 
+boolean -> boolean
+object -> object
+array -> maps the first non-null values data type
+
+```
 
 ## Springboot with Elasticsearch
 ```xml
