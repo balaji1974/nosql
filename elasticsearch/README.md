@@ -553,7 +553,9 @@ POST /products/_delete_by_query
 ```
 
 ## Routing - > This is a process of resolving the shard for a document 
-### shard_num = hash(_routing) % num_primary_shards
+```xml
+shard_num = hash(_routing) % num_primary_shards  
+```
 
 ## Text Analysis
 ```xml
@@ -961,6 +963,15 @@ PUT /review/_doc/1
   }
 }
 
+Adding a new mapping to the existing index
+PUT /review/_mappings
+{
+  
+  "properties": {
+    "created_at": {"type": "date"}
+  }
+}
+
 
 PUT http://localhost:9200/ufo
 {
@@ -1013,6 +1024,38 @@ GET /review/_mapping
 ```xml
 GET /review/_mapping/field/content
 GET /review/_mapping/field/author.email
+
+```
+
+## Date format 
+```xml
+Only date
+PUT /review/_doc/2
+{
+  "rating": 4.5,
+  "content": "Not bad. Not bad at all!",
+  "product_id": 123,
+  "created_at": "2015-03-27",
+  "author": {
+    "first_name": "Average",
+    "last_name": "Joe",
+    "email": "avgjoe@example.com"
+  }
+}
+
+Date and Time 
+PUT /review/_doc/3
+{
+  "rating": 3.5,
+  "content": "Could be better",
+  "product_id": 123,
+  "created_at": "2015-04-15T13:07:41Z",
+  "author": {
+    "first_name": "Spencer",
+    "last_name": "Pearson",
+    "email": "spearson@example.com"
+  }
+}
 
 ```
 
