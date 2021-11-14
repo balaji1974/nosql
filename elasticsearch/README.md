@@ -1233,6 +1233,29 @@ boolean -> boolean
 object -> object
 array -> maps the first non-null values data type
 
+
+Setting the dynamic mapping to false ignores new fields from being indexed 
+So if this is set then new fields must be mapped explicitly for it to be searched 
+
+```
+
+## Recommendations for mapping 
+```xml
+Do not use dynamic mapping for production 
+  -> Always use explicit mapping 
+  -> set dynamic to "strict"
+Do not always map text field as both text and keyword as this will take more disk space 
+  -> If you need full text searches then use 'text mapping'
+  -> If you need to perform aggregation/sorting or filter on exact text use 'keyword mapping'
+Disable coercion 
+  -> Since it forgives for not doing the right thing it is better to disable this in production 
+Use Correct numeric data types 
+  -> Based on what the field holds use integer or long (this occupies more disk space which might not be needed) 
+  -> Same while defining float or double (this occupies more disk space)
+Mapping parameters to consider on production system that holds a large no. of data 
+  -> Set doc_values to false if you do not need sorting, aggregation and scripting 
+  -> Set norms to false if you do not need relevance scoring 
+  -> Set index to false if you do not need a field for filtering by its values 
 ```
 
 ## Springboot with Elasticsearch
