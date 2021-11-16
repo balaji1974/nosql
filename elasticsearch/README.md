@@ -1258,6 +1258,19 @@ Mapping parameters to consider on production system that holds a large no. of da
   -> Set index to false if you do not need a field for filtering by its values 
 ```
 
+## Stemming  - It is a process of reducing the word to its root form 
+```xml
+Eg. Loved -> Love
+Drinking -> Drink 
+```
+
+## Stop words - These are words that are filtered during the analysis process 
+```xml
+Eg. "a", "the", "at", "on" etc 
+```
+
+
+
 ## Springboot with Elasticsearch
 ```xml
 Sample project - spring-data-jpa-sample
