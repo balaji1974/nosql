@@ -841,6 +841,41 @@ It can be combined with the BODY tag used in the _search end-point to filter dat
 
 Other queries like exist, prefix, wildcard, regex are also possible. Check Elastic documentation
 
+
+********************* Version 2 *****************
+
+Few types of search queries are possible: 
+GET /products/_search
+{
+  "query": {
+    "match": {
+      "name": "Lobster"
+    }
+  }
+}
+-> Query DSL query 
+or 
+
+GET /products/_search?q=name:Lobster
+-> Request Parameter query 
+or
+
+GET /products/_search
+{
+  "query": {
+    "query_string": {
+      "query": "name:Lobster"
+    }
+  }
+}
+-> Query DSL query using query_string
+
+
+Request DSL Query: 
+GET /review/_search?q=country:France
+
+
+
 ```
 
 ### Aggregation Query - Used on numeric fields
