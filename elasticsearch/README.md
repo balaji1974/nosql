@@ -1269,6 +1269,147 @@ Drinking -> Drink
 Eg. "a", "the", "at", "on" etc 
 ```
 
+## Analyser: 
+```xml
+Standard Analyser: 
+It splits text into word boundaries, removes puncuations and lower cases the letters. Stop token filter is not enabled by default. 
+
+Simple Analyser: 
+Same as standard analyser but splits text into words when it encounters anything other than letters. 
+
+Whitesapce Analyser: 
+Spilts text into takens based on white space. Will not lower case letters. 
+
+Keyword Analyser: 
+No-op analyser which outputs the input text as is. 
+
+Pattern Analyser: 
+A regular expression is used for splitting the input text. It lower cases letter by default.
+
+Custom Analyer: 
+Eg.
+
+PUT /analyzer_test
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "my_custom_analyzer": {
+          "type": "custom",
+          "char_filter": ["html_strip"],
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "stop",
+            "asciifolding"
+          ]
+        }
+      }
+    }
+  }
+}
+
+"char_filter": ["html_strip"] -> this will trup the HTML tags
+"filter": [
+            "lowercase", -> This will convert text to lower case
+            "stop", -> this will remove stop words
+            "asciifolding" -> this will convert words like açaí to acai. 
+          ]
+
+Dataset to test: 
+POST /analyzer_test/_analyze
+{
+  "analyzer": "my_custom_analyzer", 
+  "text": "I&apos;m in a <em>good</em> mood&nbsp;-&nbsp;and I <strong>love</strong> açaí!"
+}
+
+Result from the custom analyser: 
+{
+  "tokens" : [
+    {
+      "token" : "i'm",
+      "start_offset" : 0,
+      "end_offset" : 8,
+      "type" : "<ALPHANUM>",
+      "position" : 0
+    },
+    {
+      "token" : "good",
+      "start_offset" : 18,
+      "end_offset" : 27,
+      "type" : "<ALPHANUM>",
+      "position" : 3
+    },
+    {
+      "token" : "mood",
+      "start_offset" : 28,
+      "end_offset" : 32,
+      "type" : "<ALPHANUM>",
+      "position" : 4
+    },
+    {
+      "token" : "i",
+      "start_offset" : 49,
+      "end_offset" : 50,
+      "type" : "<ALPHANUM>",
+      "position" : 6
+    },
+    {
+      "token" : "love",
+      "start_offset" : 59,
+      "end_offset" : 72,
+      "type" : "<ALPHANUM>",
+      "position" : 7
+    },
+    {
+      "token" : "acai",
+      "start_offset" : 73,
+      "end_offset" : 77,
+      "type" : "<ALPHANUM>",
+      "position" : 8
+    }
+  ]
+}
+
+Refer:
+https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-analyzers.html
+https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis.html
+
+
+Adding Analyser to an existing index:
+1. Close the existing index
+2. Add the new analyser
+3. Open the index back
+
+Eg. 
+POST /analyzer_test/_close
+-> Close the index 
+
+PUT /analyzer_test/_settings
+{
+  "analysis": {
+    "analyzer": {
+      "my_second_analyzer": {
+        "type": "custom",
+        "tokenizer": "standard",
+        "char_filter": ["html_strip"],
+        "filter": [
+          "lowercase",
+          "stop",
+          "asciifolding"
+        ]
+      }
+    }
+  }
+}
+-> Add the new analyser 
+
+POST /analyzer_test/_open
+-> Open the index 
+
+GET /analyzer_test/_settings
+-> Retreive the index and check it 
+```
 
 
 ## Springboot with Elasticsearch
