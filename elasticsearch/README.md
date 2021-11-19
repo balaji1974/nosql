@@ -871,7 +871,7 @@ GET /products/_search
 -> Query DSL query using query_string
 
 
-Request DSL Query: 
+Request UI Query: 
 GET /review/_search?q=country:France
 
 
@@ -1445,6 +1445,231 @@ POST /analyzer_test/_open
 GET /analyzer_test/_settings
 -> Retreive the index and check it 
 ```
+
+## Filter Context vs Query Context 
+```xml
+In query context the relevance score is calculated where as in filter context is not calculated 
+Eg. 
+GET /_search
+{
+  "query": { 
+    "bool": { 
+      "must": [
+        { "match": { "title":   "Search"        }},
+        { "match": { "content": "Elasticsearch" }}
+      ],
+      "filter": [ 
+        { "term":  { "status": "published" }},
+        { "range": { "publish_date": { "gte": "2015-01-01" }}}
+      ]
+    }
+  }
+}
+
+```
+
+## Relevance Score Concepts: 
+```xml
+Term Frequency: No of times a search term appears within a document. More times means higher the relevance 
+Inverse Document Frequency: How often does a term appear within the index across all documents. The more often it appears the lower the relevance score. 
+Field length norm: How long is the field. The longer the field the less relevant the term within that field. 
+
+```
+
+## Term Level Queries 
+```xml
+Term level queries must be used for field like "status" and not for fields like "description" because they find exact matches 
+
+Single field
+GET /products/_search
+{
+  "query": {
+    "term": {
+      "is_active": true
+    }
+  }
+}
+-> will search for the field is_active for the value "true"
+
+Multi field search 
+GET /products/_search
+{
+  "query": {
+    "terms": {
+      "tags.keyword": [ "Soup", "Cake" ]
+    }
+  }
+}
+
+Retrieving documents based on ids
+GET /products/_search
+{
+  "query": {
+    "ids": {
+      "values": [ 1, 2, 3 ]
+    }
+  }
+}
+
+Matching range of ids
+GET /products/_search
+{
+  "query": {
+    "range": {
+      "in_stock": {
+        "gte": 1,
+        "lte": 5
+      }
+    }
+  }
+}
+
+Matching range of dates
+GET /products/_search
+{
+  "query": {
+    "range": {
+      "created": {
+        "gte": "2010/01/01",
+        "lte": "2010/12/31"
+      }
+    }
+  }
+}
+
+Matching with custom date format
+GET /products/_search
+{
+  "query": {
+    "range": {
+      "created": {
+        "gte": "01-01-2010",
+        "lte": "31-12-2010",
+        "format": "dd-MM-yyyy"
+      }
+    }
+  }
+}
+
+Subtracting one year from an anchor date
+GET /products/_search
+{
+  "query": {
+    "range": {
+      "created": {
+        "gte": "2010/01/01||-1y" 
+      }
+    }
+  }
+}
+where "gte": "2010/01/01||-1y"  -> is the anchor date and -1y indicates subtracting 1 year
+
+Subtracting one year and 1 day from an anchor date
+GET /products/_search
+{
+  "query": {
+    "range": {
+      "created": {
+        "gte": "2010/01/01||-1y-1d"
+      }
+    }
+  }
+}
+
+Rounding date by 1 month 
+GET /products/_search
+{
+  "query": {
+    "range": {
+      "created": {
+        "gte": "2010/01/01||-1y/M"
+      }
+    }
+  }
+}
+
+Matching documents containing current date 
+GET /products/_search
+{
+  "query": {
+    "range": {
+      "created": {
+        "gte": "now"
+      }
+    }
+  }
+}
+
+Rounding by month before subtracting one year from the current date
+GET /products/_search
+{
+  "query": {
+    "range": {
+      "created": {
+        "gte": "now/M-1y"
+      }
+    }
+  }
+}
+
+Matching documents with non-null value
+GET /products/_search
+{
+  "query": {
+    "exists": {
+      "field": "tags"
+    }
+  }
+}
+
+Matching documents with values of field beginning with some word (here tags field beginning with Vege was matched)
+GET /products/_search
+{
+  "query": {
+    "prefix": {
+      "tags.keyword": "Vege"
+    }
+  }
+}
+
+Wildcard match for zero to more characters 
+GET /products/_search
+{
+  "query": {
+    "wildcard": {
+      "tags.keyword": "Veg*ble"
+    }
+  }
+}
+
+Wildcard matching of single character
+GET /products/_search
+{
+  "query": {
+    "wildcard": {
+      "tags.keyword": "Veg?table"
+    }
+  }
+}
+
+Searching with regular expression 
+GET /products/_search
+{
+  "query": {
+    "regexp": {
+      "tags.keyword": "Veg[a-zA-Z]+ble"
+    }
+  }
+}
+```
+
+## Full text query 
+```xml
+
+
+```
+
+
 
 
 ## Springboot with Elasticsearch
