@@ -2410,6 +2410,159 @@ GET /company/_search
 }
 
 
+Parent/child inner hits - Including inner hits for the has_child query
+GET /department/_search
+{
+  "query": {
+    "has_child": {
+      "type": "employee",
+      "inner_hits": {},
+      "query": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "age": {
+                  "gte": 50
+                }
+              }
+            }
+          ],
+          "should": [
+            {
+              "term": {
+                "gender.keyword": "M"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+
+Parent/child inner hits - Including inner hits for the has_parent query
+GET /department/_search
+{
+  "query": {
+    "has_parent": {
+      "inner_hits": {},
+      "parent_type": "department",
+      "query": {
+        "term": {
+          "name.keyword": "Development"
+        }
+      }
+    }
+  }
+}
+
+Terms lookup mechanism 
+Adding the following test data first 
+PUT /users/_doc/1
+{
+  "name": "John Roberts",
+  "following" : [2, 3]
+}
+PUT /users/_doc/2
+{
+  "name": "Elizabeth Ross",
+  "following" : []
+}
+PUT /users/_doc/3
+{
+  "name": "Jeremy Brooks",
+  "following" : [1, 2]
+}
+PUT /users/_doc/4
+{
+  "name": "Diana Moore",
+  "following" : [3, 1]
+}
+PUT /stories/_doc/1
+{
+  "user": 3,
+  "content": "Wow look, a penguin!"
+}
+PUT /stories/_doc/2
+{
+  "user": 1,
+  "content": "Just another day at the office... #coffee"
+}
+PUT /stories/_doc/3
+{
+  "user": 1,
+  "content": "Making search great again! #elasticsearch #elk"
+}
+PUT /stories/_doc/4
+{
+  "user": 4,
+  "content": "Had a blast today! #rollercoaster #amusementpark"
+}
+PUT /stories/_doc/5
+{
+  "user": 4,
+  "content": "Yay, I just got hired as an Elasticsearch consultant - so excited!"
+}
+PUT /stories/_doc/6
+{
+  "user": 2,
+  "content": "Chilling at the beach @ Greece #vacation #goodtimes"
+}
+
+Querying stories from a user's followers
+GET /stories/_search
+{
+  "query": {
+    "terms": {
+      "user": {
+        "index": "users",
+        "id": "1",
+        "path": "following"
+      }
+    }
+  }
+}
+
+Limitation of joins 
+-------------------
+Join documents must be stored within the same index 
+Parent and child documents must be on the same shard
+There can be only one join field per index 
+A join field can have as many relations as we want 
+New relations can be added after creating an index 
+Child relationships can be only added to existing parents 
+A document can have only one parent but multiple children are possible 
+
+```
+
+## Controlling query results 
+```xml
+GET /products/_search?format=yaml 
+-> this will diplay the output in yaml format
+
+GET /products/_search?format=yaml
+{
+  "query": {
+    "match": {
+      "name": "Wine" 
+    }
+  }
+}
+-> this will display results for matching name = "wine"
+
+GET /products/_search?pretty
+{
+  "query": {
+    "match": {
+      "name": "Wine" 
+    }
+  }
+}
+-> this will display result in a pretty format
+
+
+
 
 ```
 
