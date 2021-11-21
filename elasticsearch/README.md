@@ -1665,12 +1665,753 @@ GET /products/_search
 
 ## Full text query 
 ```xml
+Full text queries are used where exact match is not required - For eg. blogpost, description field, articles etc
 
+Import the data set from the recipes-bulk.json file using the below command: 
+curl -H "Content-Type: application/x-ndjson" -XPOST "http://localhost:9200/recipe/_bulk?pretty" --data-binary "@recipes-bulk.json"
+
+Check if everything is ok after the upload
+GET /recipe/_search
+GET /recipe/_mapping
+
+Our first full text query - By default all words are matched using the 'or' boolean match 
+GET /recipe/_search
+{
+  "query": {
+    "match": {
+      "title": "Recipes with pasta or spaghetti"
+    }
+  }
+}
+
+Below query is more of what we want where we want receipe to match pasta and spagehetti 
+GET /recipe/_search
+{
+  "query": {
+    "match": {
+      "title": {
+        "query": "pasta spaghetti",
+        "operator": "and"
+      }
+    }
+  }
+}
+
+Matching Phrases - Order of the phrase is maintained and important 
+GET /recipe/_search
+{
+  "query": {
+    "match_phrase": {
+      "title": "spaghetti puttanesca"
+    }
+  }
+}
+
+Matching multiple fields
+GET /recipe/_search
+{
+  "query": {
+    "multi_match": {
+      "query": "pasta",
+      "fields": [ "title", "description" ]
+    }
+  }
+}
 
 ```
 
+## Adding boolean logic to search queries 
+```xml
+
+Adding boolean logic to a 'must' query 
+GET /recipe/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "ingredients.name": "parmesan"
+          }
+        },
+        {
+          "range": {
+            "preparation_time_minutes": {
+              "lte": 15
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+-> Everything under must array must match 
+
+For faster performance move the range object to the filter object outside of the must object as mentioned below
+as we do not have the concept of how well the prepartation time matches and it is not necessary to keep it inside the 'must' object
+GET /recipe/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "ingredients.name": "parmesan"
+          }
+        }
+      ],
+      "filter": [
+        {
+          "range": {
+            "preparation_time_minutes": {
+              "lte": 15
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+-> Here the match is the same no. of records but the relevane score changees
+
+Must not match query:
+GET /recipe/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "ingredients.name": "parmesan"
+          }
+        }
+      ],
+      "must_not": [
+        {
+          "match": {
+            "ingredients.name": "tuna"
+          }
+        }
+      ],
+      "filter": [
+        {
+          "range": {
+            "preparation_time_minutes": {
+              "lte": 15
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+
+Should object boost the relevance score if they match but it is not compulsory that it must match 
+GET /recipe/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "ingredients.name": "parmesan"
+          }
+        }
+      ],
+      "must_not": [
+        {
+          "match": {
+            "ingredients.name": "tuna"
+          }
+        }
+      ],
+      "should": [
+        {
+          "match": {
+            "ingredients.name": "parsley"
+          }
+        }
+      ],
+      "filter": [
+        {
+          "range": {
+            "preparation_time_minutes": {
+              "lte": 15
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+
+Named Boolean query for debugging
+GET /recipe/_search
+{
+    "query": {
+        "bool": {
+          "must": [
+            {
+              "match": {
+                "ingredients.name": {
+                  "query": "parmesan",
+                  "_name": "parmesan_must"
+                }
+              }
+            }
+          ],
+          "must_not": [
+            {
+              "match": {
+                "ingredients.name": {
+                  "query": "tuna",
+                  "_name": "tuna_must_not"
+                }
+              }
+            }
+          ],
+          "should": [
+            {
+              "match": {
+                "ingredients.name": {
+                  "query": "parsley",
+                  "_name": "parsley_should"
+                }
+              }
+            }
+          ],
+          "filter": [
+            {
+              "range": {
+                "preparation_time_minutes": {
+                  "lte": 15,
+                  "_name": "prep_time_filter"
+                }
+              }
+            }
+          ]
+        }
+    }
+}
+-> Here we will have an output that will also contain which part of the match query matched. 
+Eg. 
+"matched_queries" : [
+  "prep_time_filter",
+  "parmesan_must",
+  "parsley_should"
+] 
+
+```
+
+## Joining queries 
+```xml
+Elasticsearch supports simple joins but these queries are expensive and inefficient so always follow denormalization when ever necessary.
+
+Create a new index named department with the following mapping
+PUT /department
+{
+  "mappings": {  
+    "properties": {
+      "name": {
+        "type": "text"
+      },
+      "employees": {
+        "type": "nested"
+      }
+    }
+  }
+}
+
+Put documents into this index 
+PUT /department/_doc/1
+{
+  "name": "Development",
+  "employees": [
+    {
+      "name": "Eric Green",
+      "age": 39,
+      "gender": "M",
+      "position": "Big Data Specialist"
+    },
+    {
+      "name": "James Taylor",
+      "age": 27,
+      "gender": "M",
+      "position": "Software Developer"
+    },
+    {
+      "name": "Gary Jenkins",
+      "age": 21,
+      "gender": "M",
+      "position": "Intern"
+    },
+    {
+      "name": "Julie Powell",
+      "age": 26,
+      "gender": "F",
+      "position": "Intern"
+    },
+    {
+      "name": "Benjamin Smith",
+      "age": 46,
+      "gender": "M",
+      "position": "Senior Software Engineer"
+    }
+  ]
+}
+PUT /department/_doc/2
+{
+  "name": "HR & Marketing",
+  "employees": [
+    {
+      "name": "Patricia Lewis",
+      "age": 42,
+      "gender": "F",
+      "position": "Senior Marketing Manager"
+    },
+    {
+      "name": "Maria Anderson",
+      "age": 56,
+      "gender": "F",
+      "position": "Head of HR"
+    },
+    {
+      "name": "Margaret Harris",
+      "age": 19,
+      "gender": "F",
+      "position": "Intern"
+    },
+    {
+      "name": "Ryan Nelson",
+      "age": 31,
+      "gender": "M",
+      "position": "Marketing Manager"
+    },
+    {
+      "name": "Kathy Williams",
+      "age": 49,
+      "gender": "F",
+      "position": "Senior Marketing Manager"
+    },
+    {
+      "name": "Jacqueline Hill",
+      "age": 28,
+      "gender": "F",
+      "position": "Junior Marketing Manager"
+    },
+    {
+      "name": "Donald Morris",
+      "age": 39,
+      "gender": "M",
+      "position": "SEO Specialist"
+    },
+    {
+      "name": "Evelyn Henderson",
+      "age": 24,
+      "gender": "F",
+      "position": "Intern"
+    },
+    {
+      "name": "Earl Moore",
+      "age": 21,
+      "gender": "M",
+      "position": "Junior SEO Specialist"
+    },
+    {
+      "name": "Phillip Sanchez",
+      "age": 35,
+      "gender": "M",
+      "position": "SEM Specialist"
+    }
+  ]
+}
+
+Query the nested field:
+GET /department/_search
+{
+  "query": {
+    "nested": {
+      "path": "employees",
+      "query": {
+        "bool": {
+          "must": [
+            {
+              "match": {
+                "employees.position": "intern"
+              }
+            },
+            {
+              "term": {
+                "employees.gender.keyword": {
+                  "value": "F"
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+-> Here "nested" and "path" are how nested quries must be used 
+
+The problem with above query is that it will bring all the employees that have the array with the matching values along with also the unmatched arrays. 
+To filter this we have the concept of inner hits in Elasticsearch
+
+Inner hits: -To fetch only the matching array values from within the document 
+GET /department/_search
+{
+  "_source": false,
+  "query": {
+    "nested": {
+      "path": "employees",
+      "inner_hits": {},
+      "query": {
+        "bool": {
+          "must": [
+            {
+              "match": {
+                "employees.position": "intern"
+              }
+            },
+            {
+              "term": {
+                "employees.gender.keyword": {
+                  "value": "F"
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+
+-> "_source" is set to false so that the source document is not fetched. 
+
+Mapping document relationships
+PUT /department/_mapping
+{
+  "properties": {
+    "join_field": { 
+      "type": "join",
+      "relations": {
+        "department": "employee"
+      }
+    }
+  }
+}
+
+Adding documents - Adding departments 
+PUT /department/_doc/1
+{
+  "name": "Development",
+  "join_field": "department"
+}
+PUT /department/_doc/2
+{
+  "name": "Marketing",
+  "join_field": "department"
+}
+
+Adding documents - Adding employees into each department
+PUT /department/_doc/3?routing=1
+{
+  "name": "Bo Andersen",
+  "age": 28,
+  "gender": "M",
+  "join_field": {
+    "name": "employee",
+    "parent": 1
+  }
+}
+PUT /department/_doc/4?routing=2
+{
+  "name": "John Doe",
+  "age": 44,
+  "gender": "M",
+  "join_field": {
+    "name": "employee",
+    "parent": 2
+  }
+}
+PUT /department/_doc/5?routing=1
+{
+  "name": "James Evans",
+  "age": 32,
+  "gender": "M",
+  "join_field": {
+    "name": "employee",
+    "parent": 1
+  }
+}
+PUT /department/_doc/6?routing=1
+{
+  "name": "Daniel Harris",
+  "age": 52,
+  "gender": "M",
+  "join_field": {
+    "name": "employee",
+    "parent": 1
+  }
+}
+PUT /department/_doc/7?routing=2
+{
+  "name": "Jane Park",
+  "age": 23,
+  "gender": "F",
+  "join_field": {
+    "name": "employee",
+    "parent": 2
+  }
+}
+PUT /department/_doc/8?routing=1
+{
+  "name": "Christina Parker",
+  "age": 29,
+  "gender": "F",
+  "join_field": {
+    "name": "employee",
+    "parent": 1
+  }
+}
+
+Querying by parent 
+GET /department/_search
+{
+  "query": {
+    "parent_id": {
+      "type": "employee",
+      "id": 1
+    }
+  }
+}
 
 
+Querying child documents by parent : Matching child documents by parent criteria
+GET /department/_search
+{
+  "query": {
+    "has_parent": {
+      "parent_type": "department",
+      "query": {
+        "term": {
+          "name.keyword": "Development"
+        }
+      }
+    }
+  }
+}
+
+Querying child documents by parent : Incorporating the parent documents' relevance scores
+GET /department/_search
+{
+  "query": {
+    "has_parent": {
+      "parent_type": "department",
+      "score": true,
+      "query": {
+        "term": {
+          "name.keyword": "Development"
+        }
+      }
+    }
+  }
+}
+
+
+Querying parent by child documents - Finding parents with child documents matching a bool query
+GET /department/_search
+{
+  "query": {
+    "has_child": {
+      "type": "employee",
+      "query": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "age": {
+                  "gte": 50
+                }
+              }
+            }
+          ],
+          "should": [
+            {
+              "term": {
+                "gender.keyword": "M"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+
+Querying parent by child documents - Taking relevance scores into account with score_mode
+GET /department/_search
+{
+  "query": {
+    "has_child": {
+      "type": "employee",
+      "score_mode": "sum",
+      "query": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "age": {
+                  "gte": 50
+                }
+              }
+            }
+          ],
+          "should": [
+            {
+              "term": {
+                "gender.keyword": "M"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+
+Here "score_mode": has the following values:
+sum - matching relevance score of all the children is summed up and mapped to the parent
+avg - matching relevance score of all the children is averaged up and mapped to the parent 
+min - matching minimum relevance score of all the children is found and mapped to the parent
+max - matching naximum relevance score of all the children is found and mapped to the parent
+none - default behaviour and no relevance score is considered 
+
+Querying parent by child documents - Specifying the minimum and maximum number of children
+GET /department/_search
+{
+  "query": {
+    "has_child": {
+      "type": "employee",
+      "score_mode": "sum",
+      "min_children": 1,
+      "max_children": 5,
+      "query": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "age": {
+                  "gte": 50
+                }
+              }
+            }
+          ],
+          "should": [
+            {
+              "term": {
+                "gender.keyword": "M"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+
+Multi-level relations
+Creating the index with mapping
+PUT /company
+{
+  "mappings": {
+    "properties": {
+      "join_field": { 
+        "type": "join",
+        "relations": {
+          "company": ["department", "supplier"],
+          "department": "employee"
+        }
+      }
+    }
+  }
+}
+
+Adding a company
+PUT /company/_doc/1
+{
+  "name": "My Company Inc.",
+  "join_field": "company"
+}
+
+Adding a department
+PUT /company/_doc/2?routing=1
+{
+  "name": "Development",
+  "join_field": {
+    "name": "department",
+    "parent": 1
+  }
+}
+
+Adding an employee
+PUT /company/_doc/3?routing=1
+{
+  "name": "Bo Andersen",
+  "join_field": {
+    "name": "employee",
+    "parent": 2
+  }
+}
+
+Adding some more test data
+PUT /company/_doc/4
+{
+  "name": "Another Company, Inc.",
+  "join_field": "company"
+}
+PUT /company/_doc/5?routing=4
+{
+  "name": "Marketing",
+  "join_field": {
+    "name": "department",
+    "parent": 4
+  }
+}
+PUT /company/_doc/6?routing=4
+{
+  "name": "John Doe",
+  "join_field": {
+    "name": "employee",
+    "parent": 5
+  }
+}
+
+Example of querying multi-level relations
+GET /company/_search
+{
+  "query": {
+    "has_child": {
+      "type": "department",
+      "query": {
+        "has_child": {
+          "type": "employee",
+          "query": {
+            "term": {
+              "name.keyword": "John Doe"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+
+
+```
 
 ## Springboot with Elasticsearch
 ```xml
