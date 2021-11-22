@@ -2561,7 +2561,199 @@ GET /products/_search?pretty
 }
 -> this will display result in a pretty format
 
+Excluding the _source field altogether
+GET /recipe/_search
+{
+  "_source": false,
+  "query": {
+    "match": { "title": "pasta" }
+  }
+}
+-> Useful if we need to retrieve fields like id to be sent to another data source
 
+Only returning the created field
+GET /recipe/_search
+{
+  "_source": "created",
+  "query": {
+    "match": { "title": "pasta" }
+  }
+}
+-> Displays only the created field from the source 
+
+Only returning an object's key
+GET /recipe/_search
+{
+  "_source": "ingredients.name",
+  "query": {
+    "match": { "title": "pasta" }
+  }
+}
+-> will return the name propety of the ingredients field
+
+Returning all of an object's keys
+GET /recipe/_search
+{
+  "_source": "ingredients.*",
+  "query": {
+    "match": { "title": "pasta" }
+  }
+}
+-> will return all the propeties of the ingredients field
+
+Returning the ingredients object with all keys, and the servings field
+GET /recipe/_search
+{
+  "_source": [ "ingredients.*", "servings" ],
+  "query": {
+    "match": { "title": "pasta" }
+  }
+}
+-> will return all the properties of the ingredents field along with the servings field
+
+Including all of the ingredients object's keys, except the name key
+GET /recipe/_search
+{
+  "_source": {
+    "includes": "ingredients.*",
+    "excludes": "ingredients.name"
+  },
+  "query": {
+    "match": { "title": "pasta" }
+  }
+}
+-> Will return all the properties of the inludes field while exculding anything that is specified in the excludes field 
+
+
+Specifying the result size (default result size is 10) - Using a query parameter
+GET /recipe/_search?size=2
+{
+  "_source": false,
+  "query": {
+    "match": {
+      "title": "pasta"
+    }
+  }
+}
+
+
+Specifying the result size (default result size is 10) - Using a parameter within the request body
+GET /recipe/_search
+{
+  "_source": false,
+  "size": 2,
+  "query": {
+    "match": {
+      "title": "pasta"
+    }
+  }
+}
+
+Specifying an offset with the from parameter - Useful for pagination
+GET /recipe/_search
+{
+  "_source": false,
+  "size": 2,
+  "from": 2,
+  "query": {
+    "match": {
+      "title": "pasta"
+    }
+  }
+}
+-> This will start from offset 2 and display 2 documents
+
+Pagination concept 
+------------------
+total_pages = ceil (total_hits/page_size)
+from = page_size * (page_no-1)) 
+https://www.elastic.co/guide/en/elasticsearch/reference/current/paginate-search-results.html
+
+
+Sorting by ascending order (implicitly)
+GET /recipe/_search
+{
+  "_source": false,
+  "query": {
+    "match_all": {}
+  },
+  "sort": [
+    "preparation_time_minutes"
+  ]
+}
+-> Default sort is ascending 
+
+Sorting by descending order
+GET /recipe/_search
+{
+  "_source": "created",
+  "query": {
+    "match_all": {}
+  },
+  "sort": [
+    { "created": "desc" }
+  ]
+}
+
+Sorting by multiple fields
+GET /recipe/_search
+{
+  "_source": [ "preparation_time_minutes", "created" ],
+  "query": {
+    "match_all": {}
+  },
+  "sort": [
+    { "preparation_time_minutes": "asc" },
+    { "created": "desc" }
+  ]
+}
+
+Sorting by multi-value fields - Sorting by the average rating (descending)
+GET /recipe/_search
+{
+  "_source": "ratings",
+  "query": {
+    "match_all": {}
+  },
+  "sort": [
+    {
+      "ratings": {
+        "order": "desc",
+        "mode": "avg"
+      }
+    }
+  ]
+}
+
+Adding a filter clause to the bool query
+GET /recipe/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "title": "pasta"
+          }
+        }
+      ],
+      "filter": [
+        {
+          "range": {
+            "preparation_time_minutes": {
+              "lte": 15
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+
+```
+
+## Aggregations
+```xml
 
 
 ```
