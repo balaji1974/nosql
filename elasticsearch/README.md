@@ -2754,7 +2754,123 @@ GET /recipe/_search
 
 ## Aggregations
 ```xml
+Data set for this section 
+Adding order index and mappings
+PUT /order
+{
+  "mappings": {
+    "properties": {
+      "purchased_at": {
+        "type": "date"
+      },
+      "lines": {
+        "type": "nested",
+        "properties": {
+          "product_id": {
+            "type": "integer"
+          },
+          "amount": {
+            "type": "double"
+          },
+          "quantity": {
+            "type": "short"
+          }
+        }
+      },
+      "total_amount": {
+        "type": "double"
+      },
+      "status": {
+        "type": "keyword"
+      },
+      "sales_channel": {
+        "type": "keyword"
+      },
+      "salesman": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "text"
+          }
+        }
+      }
+    }
+  }
+}
 
+Populating the order index with test data
+curl -H "Content-Type: application/json" -XPOST 'http://localhost:9200/order/_doc/_bulk?pretty' --data-binary "@orders-bulk.json"
+
+Metric aggregations
+Calculating statistics with sum, avg, min, and max aggregations
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "total_sales": {
+      "sum": {
+        "field": "total_amount"
+      }
+    },
+    "avg_sale": {
+      "avg": {
+        "field": "total_amount"
+      }
+    },
+    "min_sale": {
+      "min": {
+        "field": "total_amount"
+      }
+    },
+    "max_sale": {
+      "max": {
+        "field": "total_amount"
+      }
+    }
+  }
+}
+
+Retrieving the number of distinct values
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "total_salesmen": {
+      "cardinality": {
+        "field": "salesman.id"
+      }
+    }
+  }
+}
+
+Retrieving the number of values
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "values_count": {
+      "value_count": {
+        "field": "total_amount"
+      }
+    }
+  }
+}
+
+Using stats aggregation for common statistics
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "amount_stats": {
+      "stats": {
+        "field": "total_amount"
+      }
+    }
+  }
+}
 
 ```
 
@@ -2777,6 +2893,7 @@ https://reflectoring.io/spring-boot-elasticsearch/
 https://mkyong.com/spring-boot/spring-boot-spring-data-elasticsearch-example/
 https://github.com/codingexplained/complete-guide-to-elasticsearch
 https://www.udemy.com/course/elasticsearch-complete-guide/
+https://github.com/codingexplained/complete-guide-to-elasticsearch
 ```
 
 
