@@ -2832,6 +2832,7 @@ GET /order/_search
     }
   }
 }
+-> if size is not set to 0, then the first 10 results are displayed after which the final output for the 1000 records are displayed. 
 
 Retrieving the number of distinct values
 GET /order/_search
@@ -2845,6 +2846,7 @@ GET /order/_search
     }
   }
 }
+-> This displays the total no. of distinct sales men based on their ids 
 
 Retrieving the number of values
 GET /order/_search
@@ -2858,6 +2860,7 @@ GET /order/_search
     }
   }
 }
+-> This displays the total number of values that the total_amount field has. 
 
 Using stats aggregation for common statistics
 GET /order/_search
@@ -2871,6 +2874,779 @@ GET /order/_search
     }
   }
 }
+-> This gives the statistics like count, max, min, avg & sum of the field total amount
+
+Creating a bucket for each status value
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "status_terms": {
+      "terms": {
+        "field": "status"
+      }
+    }
+  }
+}
+-> The status field value is grouped and is counted against each distinct value and displayed 
+
+Including 20 terms instead of the default 10
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "status_terms": {
+      "terms": {
+        "field": "status",
+        "size": 20
+      }
+    }
+  }
+}
+-> Without the "size": 20 we will get 10 unique values if they are more than 10 values and all other will be grouped under the sum_other_doc_count parameter 
+
+Aggregating documents with missing field (or NULL)
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "status_terms": {
+      "terms": {
+        "field": "status",
+        "size": 20,
+        "missing": "N/A"
+      }
+    }
+  }
+}
+-> By adding "missing" parameter we can have the null values also grouped into one bucket 
+
+Changing the minimum document count for a bucket to be created
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "status_terms": {
+      "terms": {
+        "field": "status",
+        "size": 20,
+        "missing": "N/A",
+        "min_doc_count": 200
+      }
+    }
+  }
+}
+-> min_doc_count will specify the minimum no. of documents that need to be present in result to be considered for the count, default value is 0, 
+this is like a having clause in SQL 
+
+Ordering the buckets
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "status_terms": {
+      "terms": {
+        "field": "status",
+        "size": 20,
+        "missing": "N/A",
+        "min_doc_count": 0,
+        "order": {
+          "_key": "asc"
+        }
+      }
+    }
+  }
+}
+-> This is like the order by clause in SQL. If you need to order by value instead of the key then use "_count": "asc"
+
+Note: Please note that terms query document aggregation counts are approximate and not accurate (because of the distruted nature of the shards)
+
+
+Nested aggregations - Retrieving statistics for each status
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "status_terms": {
+      "terms": {
+        "field": "status"
+      },
+      "aggs": {
+        "status_stats": {
+          "stats": {
+            "field": "total_amount"
+          }
+        }
+      }
+    }
+  }
+}
+-> this will display the count of aggration of status field along with the stats(min, max ett) of total_amount field within this aggregation 
+
+Nested aggregations - Narrowing down the aggregation context
+GET /order/_search
+{
+  "size": 0,
+  "query": {
+    "range": {
+      "total_amount": {
+        "gte": 100
+      }
+    }
+  },
+  "aggs": {
+    "status_terms": {
+      "terms": {
+        "field": "status"
+      },
+      "aggs": {
+        "status_stats": {
+          "stats": {
+            "field": "total_amount"
+          }
+        }
+      }
+    }
+  }
+}
+-> This will narrow down by filtering and including only documents having total_amount greater than 100 
+
+Filtering out documents - Filtering out documents with low total_amount
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "low_value": {
+      "filter": {
+        "range": {
+          "total_amount": {
+            "lt": 50
+          }
+        }
+      }
+    }
+  }
+}
+-> This is an example of running a filter before applying any aggregation 
+
+Filtering out documents - Aggregating on the bucket of remaining documents
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "low_value": {
+      "filter": {
+        "range": {
+          "total_amount": {
+            "lt": 50
+          }
+        }
+      },
+      "aggs": {
+        "avg_amount": {
+          "avg": {
+            "field": "total_amount"
+          }
+        }
+      }
+    }
+  }
+}
+-> From the previous query we apply aggration 'avg' to just the filtered results 
+
+Defining bucket rules with filters - Placing documents into buckets based on criteria
+GET /recipe/_search
+{
+  "size": 0,
+  "aggs": {
+    "my_filter": {
+      "filters": {
+        "filters": {
+          "pasta": {
+            "match": {
+              "title": "pasta"
+            }
+          },
+          "spaghetti": {
+            "match": {
+              "title": "spaghetti"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+-> This will filter documents into bucket by matching fiter criteria that we set 
+
+Defining bucket rules with filters - Calculate average ratings for buckets
+GET /recipe/_search
+{
+  "size": 0,
+  "aggs": {
+    "my_filter": {
+      "filters": {
+        "filters": {
+          "pasta": {
+            "match": {
+              "title": "pasta"
+            }
+          },
+          "spaghetti": {
+            "match": {
+              "title": "spaghetti"
+            }
+          }
+        }
+      },
+      "aggs": {
+        "avg_rating": {
+          "avg": {
+            "field": "ratings"
+          }
+        }
+      }
+    }
+  }
+}
+-> This will aggregate the results from the previous filter criteria that we set 
+
+Range aggregation
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "amount_distribution": {
+      "range": {
+        "field": "total_amount",
+        "ranges": [
+          {
+            "to": 50
+          },
+          {
+            "from": 50,
+            "to": 100
+          },
+          {
+            "from": 100
+          }
+        ]
+      }
+    }
+  }
+}
+-> This will create buckets of range that has been specified 
+
+Date_range aggregation
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "purchased_ranges": {
+      "date_range": {
+        "field": "purchased_at",
+        "ranges": [
+          {
+            "from": "2016-01-01",
+            "to": "2016-01-01||+6M"
+          },
+          {
+            "from": "2016-01-01||+6M",
+            "to": "2016-01-01||+1y"
+          }
+        ]
+      }
+    }
+  }
+}
+-> Date range aggregation is same as before but applied to date fields. This is || (pipe) +6M (plus 6 months)
+
+Specifying the date format
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "purchased_ranges": {
+      "date_range": {
+        "field": "purchased_at",
+        "format": "yyyy-MM-dd",
+        "ranges": [
+          {
+            "from": "2016-01-01",
+            "to": "2016-01-01||+6M"
+          },
+          {
+            "from": "2016-01-01||+6M",
+            "to": "2016-01-01||+1y"
+          }
+        ]
+      }
+    }
+  }
+}
+-> This specifies the date format to display and this should match the format that we use in the from and to ranges
+
+Enabling keys for the buckets
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "purchased_ranges": {
+      "date_range": {
+        "field": "purchased_at",
+        "format": "yyyy-MM-dd",
+        "keyed": true,
+        "ranges": [
+          {
+            "from": "2016-01-01",
+            "to": "2016-01-01||+6M"
+          },
+          {
+            "from": "2016-01-01||+6M",
+            "to": "2016-01-01||+1y"
+          }
+        ]
+      }
+    }
+  }
+}
+-> This will enable the date range as the key for each bucket which makes the display better
+
+Defining the bucket keys
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "purchased_ranges": {
+      "date_range": {
+        "field": "purchased_at",
+        "format": "yyyy-MM-dd",
+        "keyed": true,
+        "ranges": [
+          {
+            "from": "2016-01-01",
+            "to": "2016-01-01||+6M",
+            "key": "first_half"
+          },
+          {
+            "from": "2016-01-01||+6M",
+            "to": "2016-01-01||+1y",
+            "key": "second_half"
+          }
+        ]
+      }
+    }
+  }
+}
+-> Ths defines our own custom keys for each of the bucket 
+
+Adding a sub-aggregation
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "purchased_ranges": {
+      "date_range": {
+        "field": "purchased_at",
+        "format": "yyyy-MM-dd",
+        "keyed": true,
+        "ranges": [
+          {
+            "from": "2016-01-01",
+            "to": "2016-01-01||+6M",
+            "key": "first_half"
+          },
+          {
+            "from": "2016-01-01||+6M",
+            "to": "2016-01-01||+1y",
+            "key": "second_half"
+          }
+        ]
+      },
+      "aggs": {
+        "bucket_stats": {
+          "stats": {
+            "field": "total_amount"
+          }
+        }
+      }
+    }
+  }
+}
+-> This adds aggeration to each of the bucket based on the field specified 
+
+Histograms - Distribution of total_amount with interval 25
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "amount_distribution": {
+      "histogram": {
+        "field": "total_amount",
+        "interval": 25
+      }
+    }
+  }
+}
+-> This will automatically create buckets in a specified interval on a specified numeric field, in our case the total_amount
+
+Requiring minimum 1 document per bucket
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "amount_distribution": {
+      "histogram": {
+        "field": "total_amount",
+        "interval": 25,
+        "min_doc_count": 1
+      }
+    }
+  }
+}
+-> This will make sure that each bucket has a minimum of at least 1 document. Empty buckets will not be displayed in the histogram results 
+
+Specifying fixed bucket boundaries
+GET /order/_search
+{
+  "size": 0,
+  "query": {
+    "range": {
+      "total_amount": {
+        "gte": 100
+      }
+    }
+  },
+  "aggs": {
+    "amount_distribution": {
+      "histogram": {
+        "field": "total_amount",
+        "interval": 25,
+        "min_doc_count": 0,
+        "extended_bounds": {
+          "min": 0,
+          "max": 500
+        }
+      }
+    }
+  }
+}
+-> Since the range query has already filted the values below 100 and the maximum value of total_amount is between 275 to 300 bucket 
+but by using the extended_bounds we force display ranges between 0 to 500 with intervals of 25 but the count for these extended ranges will be zero.  
+
+Aggregating by month with the date_histogram aggregation
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "orders_over_time": {
+      "date_histogram": {
+        "field": "purchased_at",
+        "calendar_interval": "month"
+      }
+    }
+  }
+}
+-> This histogram query will aggeregate the date field values by each month. Other parameters like year, day etc can also be used 
+
+Aggregating by month and within it by day with the date_histogram aggregation
+GET /order/_search
+{
+  "size": 0,
+  "aggs": {
+    "orders_over_month": {
+      "date_histogram": {
+        "field": "purchased_at",
+        "calendar_interval": "month"
+      },
+      "aggs": {
+        "orders_over_day": {
+            "date_histogram": {
+              "field": "purchased_at",
+              "calendar_interval": "day"
+          }
+        }
+      }
+    }
+  }
+} 
+-> This will aggregate by month and within each month by day
+
+Global aggregation - Break out of the aggregation context
+GET /order/_search
+{
+  "query": {
+    "range": {
+      "total_amount": {
+        "gte": 100
+      }
+    }
+  },
+  "size": 0,
+  "aggs": {
+    "all_orders": {
+      "global": { },
+      "aggs": {
+        "stats_amount": {
+          "stats": {
+            "field": "total_amount"
+          }
+        }
+      }
+    }
+  }
+}
+-> By specifing global it will berak out of the query range filter and aggregate all documents of the index 
+
+Global aggregation - Adding aggregation without global context
+GET /order/_search
+{
+  "query": {
+    "range": {
+      "total_amount": {
+        "gte": 100
+      }
+    }
+  },
+  "size": 0,
+  "aggs": {
+    "all_orders": {
+      "global": { },
+      "aggs": {
+        "stats_amount": {
+          "stats": {
+            "field": "total_amount"
+          }
+        }
+      }
+    },
+    "stats_expensive": {
+      "stats": {
+        "field": "total_amount"
+      }
+    }
+  }
+}
+-> By using stats we will once again break out of the global context and consider only the range query results 
+
+Missing field values - Adding test documents
+POST /order/_doc/1001
+{
+  "total_amount": 100
+}
+POST /order/_doc/1002
+{
+  "total_amount": 200,
+  "status": null
+}
+
+Missing field values - Aggregating documents with missing field value
+GET /order/_doc/_search
+{
+  "size": 0,
+  "aggs": {
+    "orders_without_status": {
+      "missing": {
+        "field": "status"
+      }
+    }
+  }
+}
+-> This will aggreate the document with missing field and display its count 
+
+Missing field values - Combining missing aggregation with other aggregations
+GET /order/_doc/_search
+{
+  "size": 0,
+  "aggs": {
+    "orders_without_status": {
+      "missing": {
+        "field": "status"
+      },
+      "aggs": {
+        "missing_sum": {
+          "sum": {
+            "field": "total_amount"
+          }
+        }
+      }
+    }
+  }
+}
+-> This will find the sum of the total_amount for the missing field status 
+
+Missing field values - Deleting test documents
+DELETE /order/_doc/1001
+DELETE /order/_doc/1002
+
+Aggregating nested objects
+GET /department/_search
+{
+  "size": 0,
+  "aggs": {
+    "employees": {
+      "nested": {
+        "path": "employees"
+      }
+    }
+  }
+}
+-> This is a general aggregation query for nested objects where the path is important 
+
+GET /department/_search
+{
+  "size": 0,
+  "aggs": {
+    "employees": {
+      "nested": {
+        "path": "employees"
+      },
+      "aggs": {
+        "minimum_age": {
+          "min": {
+            "field": "employees.age"
+          }
+        }
+      }
+    }
+  }
+}
+-> This is a sub aggregation to  the employee object 
+
+```
+
+
+## Improving the search results 
+```xml
+Proximity searches - Adding test documents
+PUT /proximity/_doc/1
+{
+  "title": "Spicy Sauce"
+}
+PUT /proximity/_doc/2
+{
+  "title": "Spicy Tomato Sauce"
+}
+PUT /proximity/_doc/3
+{
+  "title": "Spicy Tomato and Garlic Sauce"
+}
+PUT /proximity/_doc/4
+{
+  "title": "Tomato Sauce (spicy)"
+}
+PUT /proximity/_doc/5
+{
+  "title": "Spicy and very delicious Tomato Sauce"
+}
+
+
+Proximity searches - Adding the slop parameter to a match_phrase query
+GET /proximity/_search
+{
+  "query": {
+    "match_phrase": {
+      "title": {
+        "query": "spicy sauce",
+        "slop": 1
+      }
+    }
+  }
+}
+-> the slop field will help us determine how far the two search terms can be sepearted from each other. Value 1 means by 1 word between them 
+
+GET /proximity/_search
+{
+  "query": {
+    "match_phrase": {
+      "title": {
+        "query": "spicy sauce",
+        "slop": 2
+      }
+    }
+  }
+}
+-> Value 2 in slop field means that these two search terms can be 2 words apart (edit distance by moving the terms around)
+
+
+Affecting relevance scoring with proximity
+A simple match query within a bool query
+GET /proximity/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "title": {
+              "query": "spicy sauce"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+-> This ia general match query that will fetch all matches of spicy and sauce terms 
+
+Boosting relevance based on proximity
+GET /proximity/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "title": {
+              "query": "spicy sauce"
+            }
+          }
+        }
+      ],
+      "should": [
+        {
+          "match_phrase": {
+            "title": {
+              "query": "spicy sauce"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+-> This will boost the relavance score for best maching phrases 
+
+Adding the slop parameter
+GET /proximity/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "title": {
+              "query": "spicy sauce"
+            }
+          }
+        }
+      ],
+      "should": [
+        {
+          "match_phrase": {
+            "title": {
+              "query": "spicy sauce",
+              "slop": 5
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+-> We can also add a slop field to the match_phrase which will futher boost the relevance score for the lesser matching phrases 
+
+
 
 ```
 
