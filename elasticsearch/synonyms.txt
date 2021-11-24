@@ -1,0 +1,6 @@
+# This is a comment
+awful => terrible
+awesome => great, super
+elasticsearch, logstash, kibana => elk
+weird, strange
+Testing the analyzer

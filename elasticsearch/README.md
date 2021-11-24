@@ -3570,6 +3570,7 @@ GET /proximity/_search
 
 
 Affecting relevance scoring with proximity
+------------------------------------------
 A simple match query within a bool query
 GET /proximity/_search
 {
@@ -3646,9 +3647,286 @@ GET /proximity/_search
 }
 -> We can also add a slop field to the match_phrase which will futher boost the relevance score for the lesser matching phrases 
 
+Fuzzy match query
+-----------------
+Searching with fuzziness set to auto
+GET /products/_search
+{
+  "query": {
+    "match": {
+      "name": {
+        "query": "l0bster",
+        "fuzziness": "auto"
+      }
+    }
+  }
+}
+-> Typos can be matched by adding "fuzziness" to the search query 
+
+GET /products/_search
+{
+  "query": {
+    "match": {
+      "name": {
+        "query": "lobster",
+        "fuzziness": "auto"
+      }
+    }
+  }
+}
+-> Even terms like oyster will be matched here 
+
+Fuzziness is per term (and specifying an integer)
+GET /products/_search
+{
+  "query": {
+    "match": {
+      "name": {
+        "query": "l0bster love",
+        "operator": "and",
+        "fuzziness": 1
+      }
+    }
+  }
+}
+-> Here edit distance is just 1 and applied per term and so 'lobster live' will be matached
+
+Switching letters around with transpositions
+GET /products/_search
+{
+  "query": {
+    "match": {
+      "name": {
+        "query": "lvie",
+        "fuzziness": 1
+      }
+    }
+  }
+}
+-> Transpositions (where AB can be switched as BA) is also matached as edit distance of 1 and so 'lvie' is matched for 'live'
+
+Disabling transpositions
+GET /products/_search
+{
+  "query": {
+    "match": {
+      "name": {
+        "query": "lvie",
+        "fuzziness": 1,
+        "fuzzy_transpositions": false
+      }
+    }
+  }
+}
+-> "fuzzy_transpositions": false will disable transpositions 
+
+Fuzzy query
+GET /products/_search
+{
+  "query": {
+    "fuzzy": {
+      "name": {
+        "value": "LOBSTER",
+        "fuzziness": "auto"
+      }
+    }
+  }
+}
+-> fuzzy query will not match LOBSTER since it is not equal to a match query.
+A fuzzy query is a term level query and it will not match as all terms are stored in lower case. 
+
+GET /products/_search
+{
+  "query": {
+    "fuzzy": {
+      "name": {
+        "value": "lobster",
+        "fuzziness": "auto"
+      }
+    }
+  }
+}
+-> Here the fuzzy query will act like the previous match query because we used lower case in our term level search 
+Best practise is to avoid fuzzy query and always use match query with fuziness parameter. 
 
 
+Adding synonyms
+---------------
+Creating index with custom analyzer
+PUT /synonyms
+{
+  "settings": {
+    "analysis": {
+      "filter": {
+        "synonym_test": {
+          "type": "synonym", 
+          "synonyms": [
+            "awful => terrible",
+            "awesome => great, super",
+            "elasticsearch, logstash, kibana => elk",
+            "weird, strange"
+          ]
+        }
+      },
+      "analyzer": {
+        "my_analyzer": {
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "synonym_test"
+          ]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "description": {
+        "type": "text",
+        "analyzer": "my_analyzer"
+      }
+    }
+  }
+}
+
+Testing the analyzer (with synonyms)
+POST /synonyms/_analyze
+{
+  "analyzer": "my_analyzer",
+  "text": "awesome"
+}
+
+POST /synonyms/_analyze
+{
+  "analyzer": "my_analyzer",
+  "text": "Elasticsearch"
+}
+
+POST /synonyms/_analyze
+{
+  "analyzer": "my_analyzer",
+  "text": "weird"
+}
+
+POST /synonyms/_analyze
+{
+  "analyzer": "my_analyzer",
+  "text": "Elasticsearch is awesome, but can also seem weird sometimes."
+}
+
+Adding a test document
+POST /synonyms/_doc
+{
+  "description": "Elasticsearch is awesome, but can also seem weird sometimes."
+}
+
+Searching the index for synonyms
+GET /synonyms/_search
+{
+  "query": {
+    "match": {
+      "description": "great"
+    }
+  }
+}
+-> Term awesome is replaced with great and hence this query will be matched
+
+GET /synonyms/_search
+{
+  "query": {
+    "match": {
+      "description": "awesome"
+    }
+  }
+}
+-> This query will still match the document as this will be converted into an inverted index of great before sending it for matching with terms
+
+Adding synonyms from file
+-------------------------
+Copy the file synonyms.txt into the config folder elastic search under the analysis directory. 
+
+Adding index with custom analyzer
+PUT /synonyms
+{
+  "settings": {
+    "analysis": {
+      "filter": {
+        "synonym_test": {
+          "type": "synonym",
+          "synonyms_path": "analysis/synonyms.txt"
+        }
+      },
+      "analyzer": {
+        "my_analyzer": {
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "synonym_test"
+          ]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "description": {
+        "type": "text",
+        "analyzer": "my_analyzer"
+      }
+    }
+  }
+}
+
+
+POST /synonyms/_analyze
+{
+  "analyzer": "my_analyzer",
+  "text": "Elasticsearch"
+}
+-> Since we used our custom analyser the Elasticsearch is replaced by the term elk 
+
+Highlighting matches in fields
+------------------------------
+Adding a test document
+PUT /highlighting/_doc/1
+{
+  "description": "Let me tell you a story about Elasticsearch. It's a full-text search engine that is built on Apache Lucene. It's really easy to use, but also packs lots of advanced features that you can use to tweak its searching capabilities. Lots of well-known and established companies use Elasticsearch, and so should you!"
+}
+
+Highlighting matches within the description field
+GET /highlighting/_search
+{
+  "_source": false,
+  "query": {
+    "match": { "description": "Elasticsearch story" }
+  },
+  "highlight": {
+    "fields": {
+      "description" : {}
+    }
+  }
+}
+-> Here the matching text is highlighed within the <em> tag in the result 
+
+Specifying a custom tag
+GET /highlighting/_search
+{
+  "_source": false,
+  "query": {
+    "match": { "description": "Elasticsearch story" }
+  },
+  "highlight": {
+    "pre_tags": [ "<strong>" ],
+    "post_tags": [ "</strong>" ],
+    "fields": {
+      "description" : {}
+    }
+  }
+}
+-> This will match the text with our own custom tag as highligher 
 ```
+
+
 
 ## Springboot with Elasticsearch
 ```xml
