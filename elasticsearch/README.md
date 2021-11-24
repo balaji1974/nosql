@@ -4014,6 +4014,14 @@ GET /stemming_test/_search
 
 ```
 
+## Further search 
+```xml
+curl -H "Content-Type: application/x-ndjson" -XPOST http://localhost:9200/movies/_bulk --data-binary "@movies.json"
+
+
+
+```
+
 
 
 ## Springboot with Elasticsearch
