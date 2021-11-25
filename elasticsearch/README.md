@@ -1,5 +1,10 @@
 # ElasticSearch
 
+## ELK - Elastic, Logstash, Kibana
+### Elastic - Database engine built on top of Apache Lucene
+### Logstash - Tool for data collection, transformation and transportation pipeline
+### Kibana - Data visualization and analytics platform 
+
 ## Installation option 1
 ```xml
 Download and install Elasticsearch from the below URL: 
@@ -929,36 +934,6 @@ Metrics
 	-> This will group on "points" and perform std stats operation like count, min, max, avg and sum on "price" 
 
 ```
-
-## ELK - Elastic, Logstash, Kibana
-### Elastic - Database engine built on top of Apache Lucene
-### Logstash - Tool for data collection, transformation and transportation pipeline
-### Kibana - Data visualization and analytics platform 
-
-## Kibana
-```xml
-Download and unzip Kibana from https://www.elastic.co/downloads/kibana or https://www.elastic.co/start
-Move it to a folder of your choice
-
-Start Kibana from the root installation folder of kibana by executing the following command:
-bin/kibana
-
-This will auto connect to Elasticsearch provide it started in the default port of 9200
-
-Now use the browser to connect to Kibana using the url http://localhost:5601/
-
-Next click on "Add Data" and enter
-```
-
-## Logstash
-```xml
-Download and install logstash from https://www.elastic.co/downloads/logstash
-
-Start Logstash from the folder by running the following sample pipeline:
-./bin/logstash -e 'input { stdin { } } output { stdout {} }'
-
-```
-
 ## Sample data to work with for practice
 ```xml
 Download the sample file "complete.es.json"
@@ -4022,6 +3997,113 @@ curl -H "Content-Type: application/x-ndjson" -XPOST http://localhost:9200/movies
 
 ```
 
+
+## Kibana
+```xml
+Download and unzip Kibana from https://www.elastic.co/downloads/kibana or https://www.elastic.co/start
+Move it to a folder of your choice
+
+Start Kibana from the root installation folder of kibana by executing the following command:
+bin/kibana
+
+This will auto connect to Elasticsearch provide it started in the default port of 9200
+
+Now use the browser to connect to Kibana using the url http://localhost:5601/
+
+Next click on "Add Data" and enter
+```
+
+## Logstash
+```xml
+
+Install logstash
+----------------
+Download and install logstash from https://www.elastic.co/downloads/logstash
+
+Start Logstash from the folder by running the following sample pipeline:
+./bin/logstash -e 'input { stdin { } } output { stdout {} }'
+
+
+Send logfiles to Elasticsearch
+------------------------------
+Lets download a sample access log file that we will use to import into elasticsearch using logstash 
+curl http://media.sundog-soft.com/es/access_log -o access_log
+
+This will download the file called access_log into your local folder. 
+
+Now configure a logstash configuration file as follows: (file is given under the logstash folder - logstash-accesslog.conf)
+input {
+  file {
+    path => "<fullpath>/access_log"
+    start_position => "beginning"
+  }
+}
+
+filter {
+  grok {
+    match => {"message" => "%{COMBINEDAPACHELOG}"}
+  }
+  date {
+    match => ["timestamp", "dd/MMM/yyyy:HH:mm:ss Z"]
+  }
+}
+
+output {
+  elasticsearch {
+    hosts => ["http://localhost:9200"]
+  }
+  stdout {
+    codec => rubydebug 
+  }
+}
+
+Now from the downloaded logstash folder run the following command (assuming that logstash-accesslog.conf file is in the config folder)
+bin/logstash -f config/logstash-accesslog.conf
+
+You will be able to see the data being populated into elasticsearch. In my case it was pouplated to the following index (will vary depending on the current date of the system): 
+GET /logstash-2021.11.25-000001/_search
+
+Send Database table to Elasticsearch
+------------------------------------
+Lets try to connect to a database table and extract data and move it to elasticsearch 
+In my case the database is test and the table name is employee
+
+Download the mysql jdbc driver from the url https://dev.mysql.com/downloads/connector/j/
+In my case the driver is mysql-connector-java-8.0.27.zip. 
+Extract and place the mysql-connector-java-8.0.27.jar in a convenient location. 
+
+Now configure a logstash configuration file as follows: (file is given under the logstash folder - logstash-mysql.conf)
+input {
+  jdbc {
+    jdbc_connection_string => "jdbc:mysql://localhost:3306/test"
+    jdbc_user => "<userid>"
+    jdbc_password => "<password>"
+    jdbc_driver_library => "/<full_path_to_driver>/mysql-connector-java-8.0.27.jar"
+    jdbc_driver_class => "com.mysql.jdbc.Driver"
+    statement => "SELECT * FROM employee;"
+  }
+}
+
+
+output {
+  elasticsearch {
+    hosts => ["localhost:9200"]
+    index => "employee-sql"
+  }
+  stdout {
+    codec => json_lines 
+  }
+}
+
+Now from the downloaded logstash folder run the following command (assuming that logstash-mysql.conf file is in the config folder)
+bin/logstash -f config/logstash-mysql.conf
+
+You will be able to see the data being populated into elasticsearch. In my case it was pouplated to the following index: 
+GET /employee-sql/_search
+
+
+
+```
 
 
 ## Springboot with Elasticsearch
