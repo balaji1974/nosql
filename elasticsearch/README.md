@@ -4023,13 +4023,13 @@ Download and install logstash from https://www.elastic.co/downloads/logstash
 Start Logstash from the folder by running the following sample pipeline:
 ./bin/logstash -e 'input { stdin { } } output { stdout {} }'
 
+```
 
-Send logfiles to Elasticsearch
-------------------------------
+### Send logfiles to Elasticsearch
+```xml
 Lets download a sample access log file that we will use to import into elasticsearch using logstash 
-curl http://media.sundog-soft.com/es/access_log -o access_log
-
-This will download the file called access_log into your local folder. 
+curl http://media.sundog-soft.com/es/access_log -o access_log  -> This will download the file called access_log into your local folder. 
+or I have provided the file under the logstash-config directory
 
 Now configure a logstash configuration file as follows: (file is given under the logstash folder - logstash-accesslog.conf)
 input {
@@ -4063,8 +4063,10 @@ bin/logstash -f config/logstash-accesslog.conf
 You will be able to see the data being populated into elasticsearch. In my case it was pouplated to the following index (will vary depending on the current date of the system): 
 GET /logstash-2021.11.25-000001/_search
 
-Send Database table to Elasticsearch
-------------------------------------
+```
+
+### Send Database table to Elasticsearch
+```xml
 Lets try to connect to a database table and extract data and move it to elasticsearch 
 In my case the database is test and the table name is employee
 
@@ -4101,9 +4103,93 @@ bin/logstash -f config/logstash-mysql.conf
 You will be able to see the data being populated into elasticsearch. In my case it was pouplated to the following index: 
 GET /employee-sql/_search
 
+```
 
+### Send CSV file data to Elasticsearch
+```xml 
+Lets download a sample csv file that we will use to import into elasticsearch using logstash 
+https://raw.githubusercontent.com/coralogix-resources/elk-course-samples/master/csv-schema-short-numerical.csv -o csv-schema-short-numerical.csv 
+-> This will download the file called csv-schema-short-numerical.csv into your local folder. 
+or I have provided the file under the logstash-config directory
+
+Now configure a logstash configuration file as follows: (file is given under the logstash folder - logstash-csv.conf)
+input {
+  file {
+    path => "<fullpath>/csv-schema-short-numerical.csv"
+    start_position => "beginning"
+    sincedb_path => "/tmp/null" 
+  }
+}
+filter {
+  csv {
+      separator => ","
+      skip_header => "true"
+      columns => ["id","timestamp","paymentType","name","gender","ip_address","purpose","country","age"]
+  }
+}
+output {
+   elasticsearch {
+     hosts => "http://localhost:9200"
+     index => "csv-read-demo"
+  }
+stdout {}
+
+}
+
+Now from the downloaded logstash folder run the following command (assuming that logstash-csv.conf file is in the config folder)
+bin/logstash -f config/logstash-csv.conf
+
+You will be able to see the data being populated into elasticsearch. In my case it was pouplated to the following index: 
+GET /csv-read-demo/_search
 
 ```
+
+### Send CSV file data to Elasticsearch with modification in the data 
+```xml 
+Lets download a sample csv file that we will use to import into elasticsearch using logstash 
+https://raw.githubusercontent.com/coralogix-resources/elk-course-samples/master/csv-schema-short-numerical.csv -o csv-schema-short-numerical.csv 
+-> This will download the file called csv-schema-short-numerical.csv into your local folder. 
+or I have provided the file under the logstash-config directory
+
+Now configure a logstash configuration file as follows: (file is given under the logstash folder - logstash-csv-mod.conf)
+input {
+  file {
+    path => "<filepath>/csv-schema-short-numerical.csv"
+    start_position => "beginning"
+    sincedb_path => "/tmp/null"
+  }
+}
+filter {
+  csv {
+      separator => ","
+      skip_header => "true"
+      columns => ["id","timestamp","paymentType","name","gender","ip_address","purpose","country","age"]
+  }
+  mutate {
+      convert => {
+          age => "integer"
+      }
+          remove_field => ["message","@timestamp","path","host","@version"]
+  }
+}
+output {
+   elasticsearch {
+     hosts => "http://localhost:9200"
+     index => "csv-read-mod"
+  }
+
+stdout {}
+
+}
+
+Now from the downloaded logstash folder run the following command (assuming that logstash-csv-mod.conf file is in the config folder)
+bin/logstash -f config/logstash-csv-mod.conf
+
+You will be able to see the data being populated into elasticsearch. In my case it was pouplated to the following index: 
+GET /csv-read-mod/_search
+
+```
+
 
 
 ## Springboot with Elasticsearch
