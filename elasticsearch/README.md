@@ -4190,7 +4190,179 @@ GET /csv-read-mod/_search
 
 ```
 
+### Send Json data to Elasticsearch 
+```xml
+Lets download a sample json file that we will use to import into elasticsearch using logstash 
+curl http://media.sundog-soft.com/es/sample-json.log -o sample-json.log
+-> This will download the file called sample-json.log into your local folder. 
+or I have provided the file under the logstash-config directory
 
+Now configure a logstash configuration file as follows: (file is given under the logstash folder - logstash-json.conf)
+input {
+  file {
+    path => "<full file path>/sample-json.log"
+    start_position => "beginning"
+    sincedb_path => "/tmp/null"
+  }
+}
+filter {
+  json {
+    source => "message"
+  }
+}
+output {
+   elasticsearch {
+     hosts => "http://localhost:9200"
+     index => "json-demo"
+  }
+  stdout {}
+
+}
+
+Now from the downloaded logstash folder run the following command (assuming that logstash-json.conf file is in the config folder)
+bin/logstash -f config/logstash-json.conf
+
+You will be able to see the data being populated into elasticsearch. In my case it was pouplated to the following index: 
+GET /json-demo/_search
+
+```
+
+### Send modified Json data to Elasticsearch 
+```xml
+Lets download a sample json file that we will use to import into elasticsearch using logstash 
+curl http://media.sundog-soft.com/es/sample-json.log -o sample-json.log
+-> This will download the file called sample-json.log into your local folder. 
+or I have provided the file under the logstash-config directory
+
+Now configure a logstash configuration file as follows: (file is given under the logstash folder - logstash-json-mod.conf)
+input {
+  file {
+    path => "<full file path>/sample-json.log"
+    start_position => "beginning"
+    sincedb_clean_after => 0
+    sincedb_path => "/tmp/null"
+  }
+}
+filter {
+  json {
+    source => "message"
+  }
+  if [paymentType] == "Mastercard" {
+    drop {}
+  }
+  mutate {
+      remove_field => ["message","@timestamp","path","host","@version"]
+  }
+}
+output {
+   elasticsearch {
+     hosts => "http://localhost:9200"
+     index => "json-mod-demo"
+  }
+  stdout {}
+
+}
+
+Now from the downloaded logstash folder run the following command (assuming that logstash-json-mod.conf file is in the config folder)
+bin/logstash -f config/logstash-json-mod.conf
+
+You will be able to see the data being populated into elasticsearch. In my case it was pouplated to the following index: 
+GET /json-demo-mod/_search
+
+```
+
+### Split Json data and send to Elasticsearch 
+```xml
+Lets download a sample json file that we will use to import into elasticsearch using logstash 
+curl http://media.sundog-soft.com/es/sample-json-split.log -o sample-json-spilt.log
+-> This will download the file called sample-json-split.log into your local folder. 
+or I have provided the file under the logstash-config directory
+
+Now configure a logstash configuration file as follows: (file is given under the logstash folder - logstash-json-split.conf)
+input {
+  file {
+    #type => "json"
+    path => "<full file path>/sample-json-split.log"
+    start_position => "beginning"
+    sincedb_path => "/tmp/null"
+  }
+}
+filter {
+  json {
+    source => "message"
+  }
+  split {
+    field => "[pastEvents]"
+  }
+  mutate {
+      remove_field => ["message","@timestamp","path","host","@version"]
+  }
+}
+output {
+   elasticsearch {
+     hosts => "http://localhost:9200"
+     index => "json-split-demo"
+  }
+  stdout {}
+
+}
+
+Now from the downloaded logstash folder run the following command (assuming that logstash-json-split.conf file is in the config folder)
+bin/logstash -f config/logstash-json-split.conf
+
+You will be able to see the data being populated into elasticsearch. In my case it was pouplated to the following index: 
+GET /json-split-demo/_search
+
+```
+
+### Split Json data, structure it and send to Elasticsearch 
+```xml
+Lets download a sample json file that we will use to import into elasticsearch using logstash 
+curl http://media.sundog-soft.com/es/sample-json-split.log -o sample-json-spilt.log
+-> This will download the file called sample-json-split.log into your local folder. 
+or I have provided the file under the logstash-config directory
+
+Now configure a logstash configuration file as follows: (file is given under the logstash folder - logstash-json-split-structured.conf)
+input {
+  file {
+    #type => "json"
+    path => "<full file path>/sample-json-split.log"
+    start_position => "beginning"
+    sincedb_clean_after => 0
+    sincedb_path => "/tmp/null"
+  }
+}
+filter {
+  json {
+    source => "message"
+  }
+  split {
+    field => "[pastEvents]"
+  }
+  mutate {
+      add_field => {
+        "eventId" => "%{[pastEvents][eventId]}"
+        "transactionId" => "%{[pastEvents][transactionId]}"
+      }
+      remove_field => ["message","@timestamp","path","host","@version","pastEvents"]
+  }
+}
+output {
+   elasticsearch {
+     hosts => "http://localhost:9200"
+     index => "json-split-structured-demo"
+  }
+  stdout {}
+
+}
+
+Now from the downloaded logstash folder run the following command (assuming that logstash-json-split-structured.conf file is in the config folder)
+bin/logstash -f config/logstash-json-splits-structured.conf
+
+You will be able to see the data being populated into elasticsearch. In my case it was pouplated to the following index: 
+GET /json-split-structured-demo/_search
+
+```
 
 ## Springboot with Elasticsearch
 ```xml
