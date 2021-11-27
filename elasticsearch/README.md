@@ -4364,6 +4364,222 @@ GET /json-split-structured-demo/_search
 
 ```
 
+### Send files from Amazon S3 bucket to Elasticsearch
+```xml
+For this I have created an S3 bucket named logstash-storage and given it public access
+
+Now configure a logstash configuration file as follows: (file is given under the logstash folder - logstash-s3.conf)
+input {
+  s3 {
+    bucket => "logstash-storage"
+    access_key_id => "<access-key>"
+    secret_access_key => "<secret-key>"
+  }
+}
+
+filter {
+  grok {
+    match => {"message" => "%{COMBINEDAPACHELOG}"}
+  }
+  date {
+    match => ["timestamp", "dd/MMM/yyyy:HH:mm:ss Z"]
+  }
+}
+
+output {
+  elasticsearch {
+    hosts => ["http://localhost:9200"]
+    index => "s3-logs"
+  }
+  stdout {
+    codec => rubydebug 
+  }
+}
+
+Run the following command (assuming that logstash-s3.conf file is in the config folder)
+bin/logstash -f config/logstash-s3.conf
+
+You will be able to see the data being populated into elasticsearch. In my case it was pouplated to the following index: 
+GET /s3-logs/_search
+
+```
+
+### Using grok filter and send data to Elasticsearch
+```xml
+Lets download a sample file that we will use to import into elasticsearch using logstash 
+curl http://media.sundog-soft.com/es/sample.log -o sample.log
+-> This will download the file called sample.log into your local folder. 
+or I have provided the file under the logstash-config directory
+
+Now configure a logstash configuration file as follows: (file is given under the logstash folder - logstash-grok.conf)
+input {
+  file {
+    path => "<full file path>/sample.log"
+    start_position => "beginning"
+    sincedb_path => "/tmp/null"
+  }
+}
+filter {
+  grok {
+    match => {"message" => ['%{TIMESTAMP_ISO8601:time} %{LOGLEVEL:logLevel} %{GREEDYDATA:logMessage}'] }
+  }
+}
+output {
+  elasticsearch {
+    hosts => ["http://localhost:9200"]
+    index => "grok-demo"
+  }
+  stdout {}
+}
+
+Now from the downloaded logstash folder run the following command (assuming that logstash-grok.conf file is in the config folder)
+bin/logstash -f config/logstash-grok.conf
+
+You will be able to see the data being populated into elasticsearch. In my case it was pouplated to the following index: 
+GET /grok-demo/_search
+
+```
+
+### Using grok filter for multiformat log file and send data to Elasticsearch
+```xml
+Lets download a sample file that we will use to import into elasticsearch using logstash 
+curl http://media.sundog-soft.com/es/sample.log -o sample.log
+-> This will download the file called sample.log into your local folder. 
+or I have provided the file under the logstash-config directory.
+
+Add additional line to this file as below and also rename it as sample-multiformat.log
+192.168.0.1 GET /usr/id/properties
+
+Now configure a logstash configuration file as follows: (file is given under the logstash folder - logstash-grok-multiformat.conf)
+input {
+  file {
+    path => "<full file path>/sample-multiformat.log"
+    start_position => "beginning"
+    sincedb_path => "/tmp/null"
+  }
+}
+
+filter {
+  grok {
+    match => {"message" => [
+        '%{TIMESTAMP_ISO8601:time} %{LOGLEVEL:logLevel} %{GREEDYDATA:logMessage}',
+        '%{IP:clientIP} %{WORD:httpMethod} %{URIPATH:url}'
+     ] }
+  }
+}
+
+output {
+  elasticsearch {
+    hosts => ["http://localhost:9200"]
+    index => "grok-mutliformat-demo"
+  }
+  stdout {}
+}
+
+Now from the downloaded logstash folder run the following command (assuming that logstash-grok-multiformat.conf file is in the config folder)
+bin/logstash -f config/logstash-grok-multiformat.conf
+
+You will be able to see the data being populated into elasticsearch. In my case it was pouplated to the following index: 
+GET /grok-mutliformat-demo/_search
+
+```
+
+### Reading common log files - Nginx and send data to Elasticsearch
+```xml
+Lets download a sample file that we will use to import into elasticsearch using logstash from:
+https://github.com/coralogix-resources/logstash/tree/master/nginx/access.log 
+-> This will download the file called access.log into your local folder. 
+Rename the file to nginx-access.log or I have provided the file under the logstash-config directory.
+
+Now configure a logstash configuration file as follows: (file is given under the logstash folder - logstash-nginx.conf)
+input {
+file {
+   path => ["<full file path>/nginx-access.log"]
+   start_position => "beginning"
+   sincedb_clean_after => 0
+   sincedb_path => "/tmp/null"
+ }
+}
+filter {
+      grok {
+        match => { "message" => ["%{IPORHOST:remote_ip} - %{DATA:user_name} \[%{HTTPDATE:access_time}\] \"%{WORD:http_method} %{DATA:url} HTTP/%{NUMBER:http_version}\" %{NUMBER:response_code} %{NUMBER:body_sent_bytes} \"%{DATA:referrer}\" \"%{DATA:agent}\""] }
+        remove_field => "message"
+      }
+      mutate {
+        add_field => { "read_timestamp" => "%{@timestamp}" }
+      }
+      date {
+        match => [ "timestamp", "dd/MMM/YYYY:H:m:s Z" ]
+        remove_field => "timestamp"
+      }
+}
+output{
+  elasticsearch{
+    hosts => ["localhost:9200"] 
+    index => "nginx-access-logs" 
+  }
+  stdout { 
+    codec => "rubydebug"
+   }
+}
+
+Now from the downloaded logstash folder run the following command (assuming that logstash-nginx.conf file is in the config folder)
+bin/logstash -f config/logstash-nginx.conf
+
+You will be able to see the data being populated into elasticsearch. In my case it was pouplated to the following index: 
+GET /nginx-access-logs/_search
+
+```
+
+### Reading common log files - IIS and send data to Elasticsearch
+```xml
+Lets download a sample file that we will use to import into elasticsearch using logstash from:
+https://github.com/coralogix-resources/logstash/tree/master/nginx/access.log 
+-> This will download the file called access.log into your local folder. 
+Rename the file to nginx-access.log or I have provided the file under the logstash-config directory.
+
+Now configure a logstash configuration file as follows: (file is given under the logstash folder - logstash-nginx.conf)
+input {
+file {
+   path => ["<full file path>/nginx-access.log"]
+   start_position => "beginning"
+   sincedb_clean_after => 0
+   sincedb_path => "/tmp/null"
+ }
+}
+filter {
+      grok {
+        match => { "message" => ["%{IPORHOST:remote_ip} - %{DATA:user_name} \[%{HTTPDATE:access_time}\] \"%{WORD:http_method} %{DATA:url} HTTP/%{NUMBER:http_version}\" %{NUMBER:response_code} %{NUMBER:body_sent_bytes} \"%{DATA:referrer}\" \"%{DATA:agent}\""] }
+        remove_field => "message"
+      }
+      mutate {
+        add_field => { "read_timestamp" => "%{@timestamp}" }
+      }
+      date {
+        match => [ "timestamp", "dd/MMM/YYYY:H:m:s Z" ]
+        remove_field => "timestamp"
+      }
+}
+output{
+  elasticsearch{
+    hosts => ["localhost:9200"] 
+    index => "nginx-access-logs" 
+  }
+  stdout { 
+    codec => "rubydebug"
+   }
+}
+
+Now from the downloaded logstash folder run the following command (assuming that logstash-nginx.conf file is in the config folder)
+bin/logstash -f config/logstash-nginx.conf
+
+You will be able to see the data being populated into elasticsearch. In my case it was pouplated to the following index: 
+GET /nginx-access-logs/_search
+
+```
+
+
+
 ## Springboot with Elasticsearch
 ```xml
 Sample project - spring-data-jpa-sample
