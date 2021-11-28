@@ -1,0 +1,43 @@
+2021-09-30 09:17:30.364 [INFO] [restartedMain]
+				[com.bala.nosql.elasticsearch.springdatajpasample.SpringDataJpaSampleApplication:55] Starting SpringDataJpaSampleApplication using Java 11.0.2 on MacBook-Pro.local with PID 54364 (/Users/balaji/eclipse-workspace/nosql/elasticsearch/spring-data-jpa-sample/target/classes started by balaji in /Users/balaji/eclipse-workspace/nosql/elasticsearch/spring-data-jpa-sample)
+2021-09-30 09:17:30.395 [INFO] [restartedMain]
+				[com.bala.nosql.elasticsearch.springdatajpasample.SpringDataJpaSampleApplication:659] No active profile set, falling back to default profiles: default
+2021-09-30 09:17:33.680 [INFO] [restartedMain]
+				[org.apache.coyote.http11.Http11NioProtocol:173] Initializing ProtocolHandler ["http-nio-8080"]
+2021-09-30 09:17:33.684 [INFO] [restartedMain]
+				[org.apache.catalina.core.StandardService:173] Starting service [Tomcat]
+2021-09-30 09:17:33.688 [INFO] [restartedMain]
+				[org.apache.catalina.core.StandardEngine:173] Starting Servlet engine: [Apache Tomcat/9.0.53]
+2021-09-30 09:17:33.993 [INFO] [restartedMain]
+				[org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/]:173] Initializing Spring embedded WebApplicationContext
+2021-09-30 09:17:35.709 [TRACE] [restartedMain]
+				[org.springframework.data.elasticsearch.client.WIRE:64] [75852a90] Sending request GET / with parameters: 
+2021-09-30 09:17:35.990 [TRACE] [I/O dispatcher 1]
+				[org.springframework.data.elasticsearch.client.WIRE:97] [75852a90] Received raw response: 200 OK
+2021-09-30 09:17:36.462 [TRACE] [restartedMain]
+				[org.springframework.data.elasticsearch.client.WIRE:64] [2dfc8f36] Sending request HEAD /productindex?ignore_throttled=false&ignore_unavailable=false&expand_wildcards=open%2Cclosed&allow_no_indices=false with parameters: 
+2021-09-30 09:17:36.528 [TRACE] [I/O dispatcher 1]
+				[org.springframework.data.elasticsearch.client.WIRE:97] [2dfc8f36] Received raw response: 200 OK
+2021-09-30 09:17:37.530 [INFO] [restartedMain]
+				[org.apache.coyote.http11.Http11NioProtocol:173] Starting ProtocolHandler ["http-nio-8080"]
+2021-09-30 09:17:37.574 [INFO] [restartedMain]
+				[com.bala.nosql.elasticsearch.springdatajpasample.SpringDataJpaSampleApplication:61] Started SpringDataJpaSampleApplication in 8.513 seconds (JVM running for 11.067)
+2021-09-30 09:17:37.771 [TRACE] [restartedMain]
+				[org.springframework.data.elasticsearch.client.WIRE:83] [2b17749f] Sending request POST /productindex/_doc?timeout=1m with parameters: 
+Request body: {"_class":"com.bala.nosql.elasticsearch.springdatajpasample.bean.Product","name":"FountainPen","price":75.35,"quantity":15,"category":"Stationary","desc":"This is a ball point pen","manufacturer":"Reynolds"}
+2021-09-30 09:17:38.110 [TRACE] [I/O dispatcher 1]
+				[org.springframework.data.elasticsearch.client.WIRE:97] [2b17749f] Received raw response: 201 CREATED
+2021-09-30 09:17:38.148 [TRACE] [restartedMain]
+				[org.springframework.data.elasticsearch.client.WIRE:64] [16b0572e] Sending request POST /productindex/_refresh?ignore_throttled=false&ignore_unavailable=false&expand_wildcards=open&allow_no_indices=true with parameters: 
+2021-09-30 09:17:38.314 [TRACE] [I/O dispatcher 1]
+				[org.springframework.data.elasticsearch.client.WIRE:97] [16b0572e] Received raw response: 200 OK
+2021-09-30 09:17:38.653 [TRACE] [restartedMain]
+				[org.springframework.data.elasticsearch.client.WIRE:83] [5bcb5c6a] Sending request POST /productindex/_search?typed_keys=true&max_concurrent_shard_requests=5&ignore_unavailable=false&expand_wildcards=open&allow_no_indices=true&ignore_throttled=true&search_type=dfs_query_then_fetch&batched_reduce_size=512&ccs_minimize_roundtrips=true with parameters: 
+Request body: {"from":0,"size":0,"query":{"bool":{"must":[{"query_string":{"query":"FountainPen","fields":["name^1.0"],"type":"best_fields","default_operator":"and","max_determinized_states":10000,"enable_position_increments":true,"fuzziness":"AUTO","fuzzy_prefix_length":0,"fuzzy_max_expansions":50,"phrase_slop":0,"escape":false,"auto_generate_synonyms_phrase_query":true,"fuzzy_transpositions":true,"boost":1.0}}],"adjust_pure_negative":true,"boost":1.0}},"version":true,"explain":false,"track_total_hits":2147483647}
+2021-09-30 09:17:38.922 [TRACE] [I/O dispatcher 1]
+				[org.springframework.data.elasticsearch.client.WIRE:97] [5bcb5c6a] Received raw response: 200 OK
+2021-09-30 09:17:38.944 [TRACE] [restartedMain]
+				[org.springframework.data.elasticsearch.client.WIRE:83] [51166d16] Sending request POST /productindex/_search?typed_keys=true&max_concurrent_shard_requests=5&ignore_unavailable=false&expand_wildcards=open&allow_no_indices=true&ignore_throttled=true&search_type=dfs_query_then_fetch&batched_reduce_size=512&ccs_minimize_roundtrips=true with parameters: 
+Request body: {"from":0,"size":2,"query":{"bool":{"must":[{"query_string":{"query":"FountainPen","fields":["name^1.0"],"type":"best_fields","default_operator":"and","max_determinized_states":10000,"enable_position_increments":true,"fuzziness":"AUTO","fuzzy_prefix_length":0,"fuzzy_max_expansions":50,"phrase_slop":0,"escape":false,"auto_generate_synonyms_phrase_query":true,"fuzzy_transpositions":true,"boost":1.0}}],"adjust_pure_negative":true,"boost":1.0}},"version":true,"explain":false}
+2021-09-30 09:17:39.012 [TRACE] [I/O dispatcher 1]
+				[org.springframework.data.elasticsearch.client.WIRE:97] [51166d16] Received raw response: 200 OK
