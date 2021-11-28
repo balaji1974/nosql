@@ -4506,7 +4506,7 @@ GET /grok-mutliformat-demo/_search
 
 ### Input plugins for Logstash
 ```xml
-Heartbeat plugin (useful for health checks)
+Heartbeat plugin (useful for health checks to periodically check on something) 
 ----------------
 Create a config called heartbeat.conf (contents below) and run is using the comnmad bin/logstash -f config/heartbeat.conf.
 It runs every 5 seconds and sends the output to elasticsearch. message can be "sequence" or "epoch"
@@ -4531,7 +4531,7 @@ output {
   }
 }
 
-Generator plugin (useful for testing)
+Generator plugin (useful for testing by production steam of continous data)
 ----------------
 Create a config called generator.conf (contents below) and run is using the comnmad bin/logstash -f config/generator.conf.
 input {
@@ -4602,8 +4602,100 @@ output {
 }
 
 
-Http Poller
+Http Poller (to check http end points continously and store the result into a datastore)
 -----------
+Create a config file called http-poller.conf as follows:
+input {
+ http_poller {
+      urls => {
+       external_api => {
+          method => post
+          url => "https://jsonplaceholder.typicode.com/posts"
+          body => '{ "title": "foo", "body": "bar", "userId": "1"}'
+          headers => {
+           "content-type" => "application/json"
+          }
+       }
+      }
+      tags => "external-api"
+      request_timeout => 100
+      schedule => {"every" => "5s"}
+      codec => "json"
+      metadata_target => "http_poller_metadata"
+ }
+ http_poller  {
+     urls => {
+     es_health_status => {
+        method => get
+        url => "http://localhost:9200/_cluster/health"
+        headers => {
+          Accept => "application/json"
+          }
+        }
+     }
+     tags => "es_health"
+     request_timeout => 60
+     schedule => { cron => "* * * * * UTC"}
+     codec => "json"
+     metadata_target => "http_poller_metadata"
+ }
+
+}
+
+
+output {
+    if "es_health" in [tags] {  
+      elasticsearch{
+      hosts => ["localhost:9200"] 
+      index => "http-poller-es-health" 
+    }      
+  }
+   if "external-api" in [tags] {  
+      elasticsearch{
+      hosts => ["localhost:9200"] 
+      index => "http-poller-api" 
+    }      
+  }
+      stdout { 
+      codec => "rubydebug"
+    } 
+}
+
+Run this with the following command: 
+bin/logstash -f config/http-poller.conf
+
+Check the result in the following URL: 
+GET /http-poller-es-health/_search
+GET /http-poller-api/_search
+
+Twitter Plugin (This allows elasticsearch to directly import twitter data based on keywords)
+--------------
+Create a config file called twitter.conf with its content as follows: 
+input {
+  twitter {
+      consumer_key => "REPLACE THIS WITH YOUR API KEY"
+      consumer_secret => "REPLACE THIS WITH YOUR API KEY SECRET"
+      oauth_token => "REPLACE THIS WITH YOUR ACCESS TOKEN"
+      oauth_token_secret => "REPLACE THIS WITH YOUR ACCESS TOKEN SECRET"
+      keywords => ["money","bank"]
+      full_tweet => true
+  }
+}
+output {
+   elasticsearch {
+     hosts => "http://localhost:9200"
+     index => "twitter"
+  }
+stdout {
+  codec => "rubydebug"
+  }
+}
+
+Run this with the following command: 
+bin/logstash -f config/twitter.conf
+
+Check the result in the following URL: 
+GET /twitter/_search
 
 
 ```
