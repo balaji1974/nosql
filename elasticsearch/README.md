@@ -4697,7 +4697,6 @@ bin/logstash -f config/twitter.conf
 Check the result in the following URL: 
 GET /twitter/_search
 
-
 ```
 
 
