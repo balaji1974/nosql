@@ -4504,6 +4504,111 @@ GET /grok-mutliformat-demo/_search
 
 ```
 
+### Input plugins for Logstash
+```xml
+Heartbeat plugin (useful for health checks)
+----------------
+Create a config called heartbeat.conf (contents below) and run is using the comnmad bin/logstash -f config/heartbeat.conf.
+It runs every 5 seconds and sends the output to elasticsearch. message can be "sequence" or "epoch"
+input {
+  heartbeat {
+    message => "sequence"
+    #message => "epoch"
+    interval => 5
+    type => "heartbeat"
+  }
+}
+
+output {
+  if [type] == "heartbeat" {
+     elasticsearch {
+     hosts => "http://localhost:9200"
+     index => "heartbeat"
+   }
+  }
+ stdout {
+  codec => "rubydebug"
+  }
+}
+
+Generator plugin (useful for testing)
+----------------
+Create a config called generator.conf (contents below) and run is using the comnmad bin/logstash -f config/generator.conf.
+input {
+  generator {
+    lines => [
+          '{"id": 1,"first_name": "Ford","last_name": "Tarn","email": "ftarn0@go.com","gender": "Male","ip_address": "112.29.200.6"}', 
+          '{"id": 2,"first_name": "Kalila","last_name": "Whitham","email": "kwhitham1@wufoo.com","gender": "Female","ip_address": "98.98.248.37"}'
+    ]
+    count => 0
+    codec =>  "json"
+  }
+}
+output {
+  elasticsearch {
+     hosts => "http://localhost:9200"
+     index => "generator"
+  } 
+  stdout {
+    codec => "rubydebug"
+  }
+}
+
+DeadLetter Queue (Events that cannot be processed are collected in the dead letter queue if enabled)
+----------------
+For this to work please set the following (uncomment and change) in the logstash.yml file under the config folder
+dead_letter_queue.enable: true
+path.dead_letter_queue: <path>
+
+Now create a conf file to read the json content which has some data that will fall into dead letter queue
+input {
+  file {
+    start_position => "beginning"
+    path => "<full file path>/sample-data-dlq.json"
+    sincedb_path => "/tmp/null"
+  }
+}
+filter {
+    json {
+        source => "message"
+    }
+}
+output {
+   elasticsearch {
+     hosts => "http://localhost:9200"
+     index => "dql-injest-data"
+  }
+
+stdout {}
+}
+
+The rejected data will fall into a dead letter queue which can be read by running the following config: 
+input {
+  dead_letter_queue {
+    path => "<file path>/dlq"
+    # We can also add "commit_offsets => true" here if we want Logstash to continue
+    # where it left off, instead of re-processing all events in DLQ at subsequent runs
+  }
+}
+
+output {
+   elasticsearch {
+     hosts => "http://localhost:9200"
+     index => "dlq-reject-data"
+  }
+  stdout {
+    codec => "rubydebug"
+  }
+}
+
+
+Http Poller
+-----------
+
+
+```
+
+
 ## Useful grok debugger tool
 ```xml
 https://grokdebug.herokuapp.com/
