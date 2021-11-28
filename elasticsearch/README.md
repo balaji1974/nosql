@@ -4484,7 +4484,7 @@ GET /grok-mutliformat-demo/_search
 
 ```
 
-### Reading common log files and send data to Elasticsearch
+### Reading standard common log files and send them to Elasticsearch
 ```xml
 (see previous sections on how to run samples from the below table)
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -4493,7 +4493,13 @@ GET /grok-mutliformat-demo/_search
 | Nginx log files      | nginx-access.log     | logstash-nginx.conf     | bin/logstash -f config/logstash-nginx.conf          | GET /nginx-access-logs/_search       |
 | IIS log files        | iis-sample.log       | logstash-iis.conf       | bin/logstash -f config/logstash-iis.conf            | GET /iis-log/_search                 |
 | MongoDB log files    | mongodb.log          | logstash-mongodb.comf   | bin/logstash -f config/logstash-mongodb.conf        | GET /mongo-logs/_search              |
-
+| Apache log files     | access_log           | logstash-apache.conf    | bin/logstash -f config/logstash-apache.conf         | GET /apache-log/_search              |
+| Elastic log files    | elasticsearch.log    | logstash-es.conf        | bin/logstash -f config/logstash-es.conf             | GET /elasticsearch-logs/_search      |
+| Elastic slow logs    | es_slowlog.log       | logstash-es-sl.conf     | bin/logstash -f config/logstash-es-sl.conf          | GET /elastic-slow-logs/_search       | 
+| MySQL slow logs      | mysql-slow.log       | logstash-mysql-sl.conf  | bin/logstash -f config/logstash-mysql-sl.conf       | GET /mysql-slowlogs/_search          | 
+| AWS Elastic LB logs  | elb_logs.log         | logstash-aws-elb.conf   | bin/logstash -f config/logstash-aws-elb.conf        | GET /aws-elb-logs/_search            | 
+| AWS App LB logs      | alb_logs.log         | logstash-aws-alb.conf   | bin/logstash -f config/logstash-aws-alb.conf        | GET /aws-alb-logs/_search            | 
+| AWS CloudFront logs  | cloudfront_logs.log  | logstash-aws-cf.conf    | bin/logstash -f config/logstash-aws-cf.conf         | GET /aws-cloudfront-logs/_search     |
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ```
