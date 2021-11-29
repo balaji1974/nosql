@@ -4014,11 +4014,54 @@ This will auto connect to Elasticsearch provide it started in the default port o
 
 Now use the browser to connect to Kibana using the url http://localhost:5601/
 
-Next click on "Add Data" and enter
+
+To create a simple dashboard, do the following: 
+1. Menu -> Management -> Stack Management -> Kibana -> Index Patterns -> Create Index Patterns -> <Enter any index name that you need> -> Create Index Pattern 
+2. All the fields of the matched index will be displayed.
+3. Next go to Discover -> <Select your index from drop down> -> You can fiter, search and vizualize the date from here 
 
 
+Kibana Lens -> Create index patterns and associate them with charts dynamically. 
+
+Kibana Management
+-----------------
+Spaces -> Create spaces for users and customize features that needs to be given to each space. 
+Saved Objects -> Standard dashboards can be imported or exported.
+Advance Settings -> All global settings for the given space can be set here
+
+Kibana Canvas
+-------------
+This is a live visualization tool for our elasticsearch data -> Useful for creating infographics. 
+
+Check here:
+http://media.sundog-soft.com/es/canvas.txt
 
 
+```
+
+## Metricbeat 
+```xml
+Download and install metricbeat from https://www.elastic.co/downloads/beats/metricbeat
+Move it to a folder of your choice
+
+Start Metricbeat from the root installation folder of metricbeat by executing the following command:
+./metricbeat 
+
+This will collect the default system related metrics and send it out to elasticsearch 
+
+If we need to collect other application related metrics then we need to enable them in metricbeat. 
+List of available modules can be found by running the command: 
+./metricbeat modules list
+
+Combine this with Kibana to get powerful metrics on visualization and dashboards. 
+
+Refer to the various system metrics avaiable in metricbeat from the following url:
+https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-system.html
+
+Eg. 
+system.filesystem.free = available free space
+system.cpu.idle.pct = % of CPU that is idle 
+system.memory.used.pct = % of memory used 
 ```
 
 ## Logstash
@@ -4770,8 +4813,9 @@ GET /syslog-data/_search
 ```
 
 
-## Useful grok debugger tool
+## Useful grok debugger tool 
 ```xml
+(it is also availble in kibana console - use below only if you are not using kibana console)
 https://grokdebug.herokuapp.com/
 ```
 
@@ -4840,6 +4884,41 @@ To be completed later
 To be completed later 
 ```
 
+## Sample SQL queries in Elasticsearch
+```xml
+POST /_sql 
+{
+  "query" : "describe movies"
+}
+
+POST /_sql 
+{
+  "query" : "select * from review"
+}
+
+POST /_sql?format=txt
+{
+  "query" : "select * from review"
+}
+-> this is better formatted for reading
+
+POST /_sql?format=txt
+{
+  "query" : "select title, year from movies where year>1960 order by title"
+}
+
+POST /_sql/translate?pretty
+{
+  "query" : "select title, year from movies where year>1960 order by title"
+}
+-> this will return the json query that will be executed under the hood  
+
+elasticsearch-sql-cli is the command line interface for SQL queries in elasticsearch 
+
+*** Please read the SQL query limitations here: 
+https://www.elastic.co/guide/en/elasticsearch/reference/current/sql-limitations.html
+
+```
 
 
 ## Springboot with Elasticsearch
