@@ -3989,12 +3989,16 @@ GET /stemming_test/_search
 
 ```
 
-## Further search 
+## Download and Import data into Elasticsearch 
 ```xml
 curl -H "Content-Type: application/x-ndjson" -XPOST http://localhost:9200/movies/_bulk --data-binary "@movies.json"
 
+curl http://media.sundog-soft.com/es7/shakes-mapping.json -o shakes-mapping.json -> This downloads the data 
+curl -H "Content-Type: application/json" -XPUT 127.0.0.1:9200/shakespeare --data-binary @shakes-mapping.json -> This imports the mapping to elasticsearch 
 
 
+curl http://media.sundog-soft.com/es7/shakespeare_7.0.json -o shakespeare_7.0.json -> This downloads the data 
+curl -H "Content-Type: application/json" -XPOST 127.0.0.1:9200/shakespeare/_bulk --data-binary @shakespeare_7.0.json -> This imports the data to elasticsearch 
 ```
 
 
@@ -4011,6 +4015,10 @@ This will auto connect to Elasticsearch provide it started in the default port o
 Now use the browser to connect to Kibana using the url http://localhost:5601/
 
 Next click on "Add Data" and enter
+
+
+
+
 ```
 
 ## Logstash
@@ -4699,11 +4707,139 @@ GET /twitter/_search
 
 ```
 
+## Reading System Log using Logstash
+```xml
+On Unix it is located at /var/log/syslog
+On my Mac it is located at the below location: 
+sudo head -10 /private/var/log/system.log
+
+
+Please set the following syslog config file on mac to route all log enteries to the TCP IP port 10514. 
+We can later configure Logstash to listen to this port for messages. 
+open file -> /etc/syslog.conf 
+Add the following line
+*.*         @@127.0.0.1:10514
+Save and restart syslog service by the following method:
+Restart the ‘syslogd’ service by the below way: But before doing so, check if it’s running by typing:
+$ ps -e | grep syslogd
+5070 ??         2:33.75 /usr/sbin/syslogd
+The following commands restart the service. Enter your password one more time if necessary.
+$ sudo launchctl unload /System/Library/LaunchDaemons/com.apple.syslogd.plist
+$ sudo launchctl load /System/Library/LaunchDaemons/com.apple.syslogd.plist
+Check if the service was really shut down and restarted by typing the same command again. The counter should have been reset and the PID (5070 in the example above) should be a different one.
+$ ps -e | grep syslogd
+18597 ??         0:00.01 /usr/sbin/syslogd
+With this syslog is ready and sending messages to the TCP IP port 10514.
+
+Create a config file called syslog.conf with its content as follows: 
+input {
+  tcp {
+    host => "127.0.0.1"
+    port => 10514
+    type => "rsyslog"
+  }
+}
+filter {
+       grok {
+        match => { "message" => ["%{SYSLOGTIMESTAMP:[system][syslog][timestamp]} %{SYSLOGHOST:[system][syslog][hostname]} %{DATA:[system][syslog][program]}(?:\[%{POSINT:[system][syslog][pid]}\])?: %{GREEDYMULTILINE:[system][syslog][message]}"] }
+        pattern_definitions => { "GREEDYMULTILINE" => "(.|\n)*" }
+        remove_field => "message"
+      }
+      date {
+        match => [ "[system][syslog][timestamp]", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
+      }
+}
+output {
+  if [type] == "rsyslog" {
+    elasticsearch {
+      hosts => [ "localhost:9200" ]
+      index => "syslog-data" 
+    }
+  }
+  stdout { 
+    codec => "rubydebug"
+  }
+}
+
+Run this with the following command: 
+bin/logstash -f config/syslog.conf
+
+Check the result in the following URL: 
+GET /syslog-data/_search
+
+```
+
 
 ## Useful grok debugger tool
 ```xml
 https://grokdebug.herokuapp.com/
 ```
+
+## Apache Kafka with Elasticsearch/Logstash - (can rather use Kafka connectors for this to send data directly to elastic search but this is another alternative option)
+```xml
+Note: Detail information on Kafka can be found under my Kafka repository. 
+First download and install Kafka. 
+
+Start Zookeeper: 
+bin/zookeeper-server-start.sh config/zookeeper.properties
+
+Start Kafka: 
+bin/kafka-server-start.sh config/server.properties
+
+Create a Kafka Topic called kafka-logs: 
+bin/kafka-topics.sh --zookeeper localhost:2181 --create --topic kafka-logs --partitions 1 --replication-factor 1
+
+Send streaming messages from our access_log file into Kafka topic that was created: 
+bin/kafka-console-producer.sh --broker-list localhost:9092 --topic kafka-logs < "full file path"\access_log 
+
+Create a logstash config file called logstash-kafka.conf with its content as follows: 
+input {
+  kafka {
+    bootstrap_servers => "localhost:9092"
+    topics => ["kafka-logs"]
+  }
+}
+filter {
+  grok {
+    match => {"message" => "%{COMBINEDAPACHELOG}"}
+  }
+  date {
+    match => ["timestamp", "dd/MMM/yyyy:HH:mm:ss Z"]
+  }
+}
+output {
+  elasticsearch {
+    hosts => [ "localhost:9200" ]
+    index => "kafka-logs" 
+  }
+  stdout { 
+    codec => "rubydebug"
+  }
+}
+
+Run this with the following command: 
+bin/logstash -f config/logstash-kafka.conf
+
+Check the result in the following URL: 
+GET /kafka-logs/_search
+
+```
+
+## Hadoop with Elasticsearch/Logstash 
+```xml
+To be completed later 
+```
+
+## Apache Spark with Elasticsearch/Logstash 
+```xml
+To be completed later 
+```
+
+## Apache Flink with Elasticsearch/Logstash 
+```xml
+To be completed later 
+```
+
 
 
 ## Springboot with Elasticsearch
@@ -4726,6 +4862,7 @@ https://mkyong.com/spring-boot/spring-boot-spring-data-elasticsearch-example/
 https://github.com/codingexplained/complete-guide-to-elasticsearch
 https://www.udemy.com/course/elasticsearch-complete-guide/
 https://github.com/codingexplained/complete-guide-to-elasticsearch
+https://wiki.splunk.com/Community:HowTo_Configure_Mac_OS_X_Syslog_To_Forward_Data
 ```
 
 
