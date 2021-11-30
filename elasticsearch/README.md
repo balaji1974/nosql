@@ -4032,10 +4032,14 @@ Advance Settings -> All global settings for the given space can be set here
 Kibana Canvas
 -------------
 This is a live visualization tool for our elasticsearch data -> Useful for creating infographics. 
+It can also be exported and embedded into our own website 
 
 Check here:
 http://media.sundog-soft.com/es/canvas.txt
 
+Tansformers
+-----------
+You can perfom transformation of existing index and create new index (this is useful for fast analysis of results)
 
 ```
 
@@ -4062,6 +4066,15 @@ Eg.
 system.filesystem.free = available free space
 system.cpu.idle.pct = % of CPU that is idle 
 system.memory.used.pct = % of memory used 
+```
+
+## Filebeat 
+```xml
+It makes logstash light weight (takes away a lot of load from logstash)
+It takes back pressure off logstash 
+Can be easily installed and configured on webservers as it is lightweight 
+X-Pack security must be enabled for communication to Logstash / Elasticsearch (License version provides access control, audit trail and data integrity)
+
 ```
 
 ## Logstash
