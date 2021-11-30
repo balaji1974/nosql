@@ -4075,6 +4075,9 @@ It takes back pressure off logstash
 Can be easily installed and configured on webservers as it is lightweight 
 X-Pack security must be enabled for communication to Logstash / Elasticsearch (License version provides access control, audit trail and data integrity)
 
+Download and install filebeat from https://www.elastic.co/downloads/beats/filebeat
+
+
 ```
 
 ## Logstash
