@@ -5091,8 +5091,42 @@ GET _snapshot/backup-repo/snapshot-1/_status -> Monitor snapshot progress
 POST /_all/_close -> close all indicies before running the next command
 POST _snapshot/backup-repo/snapshot-1/_restore -> Restore all indices
 
+8. Rolling Restart Procedure: 
+a. Stop indexing new data 
+b. Disable shard allocation
+c. Shutdown one node
+d. Perform the maintenance activity, and  join it back to cluster (pls confirm this)
+e. Re-enable shard allocation
+f. Wait for the cluster to return to green status 
+g. Repeat step 2-6 for all other 
+h. Resume indexing new data 
+
+GET /_cluster/settings 
+{
+  "transient" : {
+    "cluster.rolling.allocation.enable" : "none"
+  }
+} -> To disable rebalancing of cluster
+
+GET /_cluster/settings 
+{
+  "transient" : {
+    "cluster.rolling.allocation.enable" : "all"
+  }
+} -> To enable rebalancing of cluster
+
 
 ```
+
+## AWS Elastic 
+```xml
+On AWS, Elasticsearch was called Amazon ES until recently.
+Now they are calling it Amazon OpenSearch Service 
+
+
+```
+
+
 
 
 ## Springboot with Elasticsearch
