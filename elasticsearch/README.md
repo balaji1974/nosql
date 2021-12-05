@@ -4077,6 +4077,70 @@ X-Pack security must be enabled for communication to Logstash / Elasticsearch (L
 
 Download and install filebeat from https://www.elastic.co/downloads/beats/filebeat
 
+Got to the filebeat install directory and check the list of modules installed:
+./filebeat modules list
+
+Enable the module that we need  - In our case it would be Apache logs and hence we will enabble it
+./filebeat modules enable apache
+
+Next edit and update the apache.yaml file inside the modules.d folder like below:
+# Module: apache
+# Docs: https://www.elastic.co/guide/en/beats/filebeat/7.15/filebeat-module-apache.html
+
+- module: apache
+  # Access logs
+  access:
+    enabled: true
+
+    # Set custom paths for the log files. If left empty,
+    # Filebeat will choose the paths depending on your OS.
+    var.paths: ["<you full path to the access log file>/access_log"]
+
+  # Error logs
+  error:
+    enabled: true
+
+    # Set custom paths for the log files. If left empty,
+    # Filebeat will choose the paths depending on your OS.
+    #var.paths: ["<you full path to the access log file>/error*"]
+
+Note: multiple logs can be enabled by using wild card. 
+
+Filebeat comes with predefined assets for parsing, indexing, and visualizing your data. 
+To load these assets run the below command: 
+./filebeat setup -e
+
+Finally run file beat:
+./filebeat -e
+
+You can now check the log data being pushed to elasticsearch (in my case into the below index):
+GET /filebeat-7.15.2-2021.12.03-000001/_search 
+
+
+Filebeat + Logstash + Elastic 
+-----------------------------
+The output for beats (filebeat & metricbeat is by default to elasticsearch )
+But on production environment we send this output to logstash, which will act as a temp buffer
+Here you can do further transformation of these logs before sending it to elasticsearch 
+
+Sample configuration for filebeat to  logstash 
+In the filebeat.yml file do the follow: 
+# ---------------------------- Elasticsearch Output ----------------------------
+#output.elasticsearch: -> This must be commented 
+  #hosts: ["localhost:9200"] -> This must be commented 
+  
+# ------------------------------ Logstash Output -------------------------------
+output.logstash: -> This must be un-commented 
+  hosts: ["localhost:5044"] -> This must be un-commented 
+
+
+Setup Databoards for filebeat 
+-----------------------------
+Run the following setup command first:
+./filebeat setup --dashboards
+
+One the dashboard is setup we can launch it from Kibana as readymade template called 
+"[Filebeat Apache] Access and error logs ECS" 
 
 ```
 
@@ -4933,6 +4997,100 @@ elasticsearch-sql-cli is the command line interface for SQL queries in elasticse
 
 *** Please read the SQL query limitations here: 
 https://www.elastic.co/guide/en/elasticsearch/reference/current/sql-limitations.html
+
+```
+
+## Administration Operations with Elasticsearch 
+```xml
+1. Always create shards more than that is required keeping in mind for future expansions. (more than the planned available nodes)
+Eg. 
+PUT /test-index 
+{
+  "settings" : {
+    "number_of_shards": 10, 
+    "number_of_replicas" : 1 
+  }
+}
+Note (very important) : The above query will create 10 primary shards with each replica shard being repeated 1 in each shard  
+
+GET /test-index/_settings -> This will display the no. of shards and replicas. 
+
+2. We can have individual index for each day of log data and in this case we need to maintain something called index alias which we can point to the current active index. 
+Eg. 
+POST /_aliases 
+{
+  "actions": [
+    {
+      "add" : {
+        "alias" : "log_current, 
+        "index" : "logs_2021_12_02"
+      }
+    },
+    {
+      "remove" : {
+        "alias" : "log_current, 
+        "index" : "logs_2021_12_01"
+      }
+    }
+  ]
+}
+
+3. Index life cycle management 
+
+4 states of an index are: 
+-> Hot (actively updated and quried) 
+-> Warm (quried but no longer updated)
+-> Cold (not quried and not updated)
+-> Delete (no more exist and deleted)
+
+Life cycle policies can be created and applied to indices as per our needs. 
+For eg. We can configure something like when a index reaches above 50 GB or max-age of 30 days move it to deleted where it can stay for another max of 90 days. 
+
+Once this is configured it can be applied to any index. 
+
+Kibana has a nice web UI for creating this under "
+Index Lifecycle Policies"
+
+4. RAM, HDD & Heapsize allocation for Elasticsearch 
+
+Recommened 32 GB for elastic and 32 GB for disk cache of lucene, so a total of 64 GB. 
+
+For Harddisk SSD is recommened and try not to use NAS disks. Local HDD is the most perferred option. 
+
+Heapsize must be set to atleast half of the physical RAM. Default size is 10 GB. It can be set by:
+export ES_HEAP_SIZE=10g
+or 
+ES_JAVA_OPTS="-Xms10g -Xmx10g" ./bin/elasticsearch 
+(Caution: Do not cross 32GB)
+
+5. Monitoring
+This is done by the x-pack tool that can be visualized with Kibana -> parts of it are free 
+
+6. Increase/Decrease shards
+POST /student/_shrink/student_new -> This will decrease shards
+POST /student/_split/student_new -> This will increase shards 
+
+7. Backup/Restore index (snapshots)
+
+Add the following repo path in the elasticsearch.yaml file: 
+path.repo : ["<path to the backup repo>"]
+
+Next send a put command as follows: 
+PUT _snapshot/backup-repo
+{
+  "type": "fs", 
+  "settings" : {
+    "location": "<path to the backup repo>/backup-repo"
+  }
+}
+
+Using the snapshot: 
+PUT _snapshot/backup-repo/snapshot-1 -> Snapshot all open indices
+GET _snapshot/backup-repo/snapshot-1 -> Fetch information about a snapshot
+GET _snapshot/backup-repo/snapshot-1/_status -> Monitor snapshot progress
+POST /_all/_close -> close all indicies before running the next command
+POST _snapshot/backup-repo/snapshot-1/_restore -> Restore all indices
+
 
 ```
 
