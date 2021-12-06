@@ -5135,8 +5135,6 @@ elastic.co -> Easy setup and up and running in minutes (an alternative to AWS)
 ```
 
 
-
-
 ## Springboot with Elasticsearch
 ```xml
 Sample project - spring-data-jpa-sample
