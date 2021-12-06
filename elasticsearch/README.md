@@ -5125,6 +5125,8 @@ AWS
 On AWS, Elasticsearch was called Amazon ES until recently.
 Now they are calling it Amazon OpenSearch Service 
 
+Search for AWS OpenSearch Service -> Create a domain (which  is the Elastic server) -> set mostly all default settings with sligh modifications like "Deployment type" as "Development and testing"
+
 
 Elastic Cloud
 -------------
