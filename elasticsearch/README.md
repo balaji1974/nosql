@@ -5118,11 +5118,17 @@ GET /_cluster/settings
 
 ```
 
-## AWS Elastic 
+##  Elastic On CLoud
 ```xml
+AWS
+---
 On AWS, Elasticsearch was called Amazon ES until recently.
 Now they are calling it Amazon OpenSearch Service 
 
+
+Elastic Cloud
+-------------
+elastic.co -> Easy setup and up and running in minutes (an alternative to AWS)
 
 ```
 
