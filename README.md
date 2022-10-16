@@ -21,8 +21,8 @@ Modern DBs want to be somewhere in-between the above 2 ends
 ```
 
 ## Types of noSQL database: 
-### Key-Value Store - Redis, Dynamo, Riak
-### Column Orientied - BigData, Casandra, SimpleDB
+### Key-Value Store - Redis, DynamoDB, Riak
+### Column Orientied - Google BigTable, Casandra, SimpleDB
 ### Graph - OrientDB, Neo4J, Tital
 ### Document Orientied - MongoDB, CouchDB, ElasticSearch
 
