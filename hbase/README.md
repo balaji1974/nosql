@@ -1,6 +1,8 @@
-# HBase 
+# Apache HBase 
 
 ## Wide column database - Eg. HBase, Cassandra, BigTable 
+## HBase runs on Hadoop file system 
+## HBase is an open-source wide column store distributed database that is based on Google's Bigtable. 
 
 
 ```xml
@@ -17,6 +19,12 @@ For data access we need to have table name, key, column family, column and optio
 
 
 ```
+
+### HMaster manages the regional server (HRegionServer) 
+### HRegionServer are just distribution of table data 
+### Each region consist of store and each store consist of one or more HFiles
+### HBase uses bloom filter to check if a row contains a named column 
+### Region splitting and compactness is managed by the HRegionServer if the HFile size grows and HMaster is notified 
 
 
 References: 
