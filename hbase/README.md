@@ -86,9 +86,10 @@ https://data-flair.training/blogs/hbase-use-cases/
 
 
 References: 
+```xml
 https://www.udemy.com/course/sql-nosql-big-data-hadoop/    
 https://www.youtube.com/watch?v=B5eq0fsMXGk
-
+```
 
 
 
