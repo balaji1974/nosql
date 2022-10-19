@@ -30,3 +30,11 @@ Modern DBs want to be somewhere in-between the above 2 ends
 
 ## Document Oriented Database - MongoDB (check the mongodb folder)
 
+
+### All projects in this section use the 1M dataset from the movielens website and the link is given in the reference section 
+
+References:
+```xml
+https://www.udemy.com/course/sql-nosql-big-data-hadoop/ 
+https://grouplens.org/datasets/movielens/
+```

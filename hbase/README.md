@@ -8,7 +8,7 @@
 
 ```xml
 It consist of Key and a column family (which is a collection of columns)
-Key is unique and used to indentify individual rows in a table 
+RowKey is unique and used to indentify individual rows in a table 
 Each column family consist of one or many columns
 Columns can vary across rows 
 Columns can also store multiple versions of each value marked with timestamp 
@@ -19,6 +19,8 @@ Each value is stored as a new version with timestamp rather than updating an old
 For data access we need to have table name, key, column family, column and optional timestamp (or else most recent version is fetched)
 
 ```
+
+### Table -> Row Keys -> Column Families -> Columns -> Cell (timestamp, value)
 
 ### HMaster manages the regional server (HRegionServer) 
 ### HRegionServer are just distribution of table data 
