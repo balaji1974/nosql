@@ -86,6 +86,33 @@ https://data-flair.training/blogs/hbase-use-cases/
 
 ```
 
+## HBase APIs
+```xml
+
+Get(row)
+Put(row, <column, value>)
+Scan(key range, filter)
+Increment(row, columns)
+Check and Put, delete etc
+
+```
+
+## Getting into a docker based HBase 
+```xml
+docker ps -> to find the container_id
+docker exec -it <container_id> sh -> to get into the shell of docker
+hbase shell -> to get into the shell of HBase
+```
+
+## Running HBase commands 
+```xml
+help -> help file
+list_namespace -> to list the existing namespace
+list -> will list all the tables in the cluser
+create_namespace 'mvl' -> Will create a namespace called 'mvl'
+create 'mvl:movie', 'a' -> this will create a table 'movie' in 'mvl' namespace with columnfamily 'a'
+create 'movie','a' -> this will create a table 'movie' in default namespace
+```
 
 References: 
 ```xml
