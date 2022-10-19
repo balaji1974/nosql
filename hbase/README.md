@@ -39,7 +39,8 @@ For data access we need to have table name, key, column family, column and optio
 docker pull dajobe/hbase 
 mkdir -p hdata/data -> create a local directory anywhere 
 cd hdata -> Change to the hdata directory 
-docker run --name=hbase-docker -h hbase-docker -d -p 16010:16010 -p 9095:9095 -p 8085:8085 -v $PWD/data:/data dajobe/hbase -> run the container 
+docker run --name=hbase-docker -h hbase-docker -d -p 16010:16010 -p 9095:9095 -p 8085:8085 -p 2181:2181 
+		-v $PWD/data:/data dajobe/hbase -> run the container 
 docker ps -> Check if the container is running 
 docker exec -it hbase-docker bash -> For getting into the running container 
 hbase shell -> Once inside the container, run this command to get into the Hbase shell 
@@ -112,7 +113,20 @@ list -> will list all the tables in the cluser
 create_namespace 'mvl' -> Will create a namespace called 'mvl'
 create 'mvl:movie', 'a' -> this will create a table 'movie' in 'mvl' namespace with columnfamily 'a'
 create 'movie','a' -> this will create a table 'movie' in default namespace
+create 'user', 'u'
+create 'altmovie', 'gm'
+create 'rating', 'a'
+create 'demo_rating', 'r'
 ```
+
+### To do java implementation
+
+## Apache Phoenix - OLTP and operational analytics for Apache Hadoop
+```xml
+
+```
+
+
 
 References: 
 ```xml
