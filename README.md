@@ -25,10 +25,12 @@ Modern DBs want to be somewhere in-between the above 2 ends
 ### Column Orientied - Google BigTable, Casandra, HBase
 ### Graph - OrientDB, Neo4J, Tital
 ### Document Orientied - MongoDB, CouchDB, ElasticSearch
+### TimeSeries - 
 
 ## Key-Value store - Redis (check the redis folder)
-
-## Document Oriented Database - MongoDB (check the mongodb folder)
+## Document Oriented Database - MongoDB (check the mongodb folder) & ElasticSearch (check elastic folder)
+## Column Oriented Database - HBase (check hbase folder)
+## 
 
 
 ### All projects in this section use the 1M dataset from the movielens website and the link is given in the reference section 
