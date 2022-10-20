@@ -3,9 +3,12 @@
 ## Wide column database - Eg. HBase, Cassandra, BigTable 
 ## HBase runs on Hadoop file system 
 ## HBase is an open-source wide column store distributed database that is based on Google's Bigtable. 
+## Very efficient and fast for read operations on individual columns but slows down if the columns are more in reads.
+## Eg. Never do 'select * from table' on a column database 
+## Inserts are fast
+## Updates are not performed as it is too slow and costly and hence we insert new values instead of overwritting the old values 
 
 ## About HBase
-
 ```xml
 It consist of Key and a column family (which is a collection of columns)
 RowKey is unique and used to indentify individual rows in a table 
@@ -121,7 +124,7 @@ create 'demo_rating', 'r'
 
 ### To do java implementation
 
-## Apache Phoenix - OLTP and operational analytics for Apache Hadoop
+## Apache Phoenix - OLTP and operational analytics for Apache Hadoop - SQL for HBase
 ```xml
 
 ```
