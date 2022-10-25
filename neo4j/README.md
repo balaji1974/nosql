@@ -61,8 +61,18 @@ Cypher is made up of clauses, statements, functions and expressions
 () -> All nodes
 (:Movie) -> Movie label node
 (m:Movie) -> m is a variable assigned to the Movie label node
-(m:Movie {key:value}) -> having key-value pair assigned 
- 
+(m:Movie {key:value}) -> having key-value pair assigned, we can have one or more key-value pairs
+m=() -> asign variable to an empty node
+m=(:Movie {}) -> assign varibale to a movie having a key-value pair 
+
+
+[] -> All relationship 
+[:LIKE] -> all like relationship
+[r:LIKE] -> assign the relationship to a varibale r
+
+
+(m) - [r] -> (m1), where m is the subject, r is the action and m1 is the object of this relationship
+
 
 
 
