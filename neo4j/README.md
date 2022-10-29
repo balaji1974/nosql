@@ -46,10 +46,12 @@ Go the download center -> https://neo4j.com/download-center/
 Select the community version and download it 
 Extract and move to your softwares folder 
 Go to this folder and run the command -> bin/neo4j start 
+To restart the server -> bin/neo4j restart 
 Once started the server can be viewed from http://localhost:7474
 Login first time with userid/pwd -> neo4j/neo4j (change it after login)
 
 I can also connect to the running server using command -> bin/cypher-shell
+To exit the shell use the command -> :exit 
 
 ```
 
@@ -93,6 +95,16 @@ DELETE -> deletes a node or relationship
 
 ```
 
+## Using plugins 
+```xml
+
+The below link contains all function extensions of neo4j
+https://github.com/neo4j-contrib
+Go to releases and download the latest in my case graph-algorithms-algo-3.5.4.0.jar  (not working currently and wait for 4.x version to be released)
+Go to releases and  download the lateest in my case apoc-4.4.0.10-all.jar
+Then restat neo4j with the command bin/neo4j restart
+```
+
 ## Cypher queries
 ```xml
 
@@ -122,6 +134,7 @@ MATCH (cal: Person {id: "mekwa@jeh.mz"})
 MATCH (shane: Person {id: "gohaeta@unowoet.ee"})
 MATCH (emy: Person {id: "zo@umahulog.am"})
 MATCH (mac: Person {id: "lo@ro.ga"})
+
 MERGE (jack)-[:REFERS]->(pat)
 MERGE (jack)-[:REFERS]->(rog)
 MERGE (pat)-[:REFERS]->(cal)
@@ -165,6 +178,7 @@ MATCH (p:Person)
 REMOVE p.passwd
 return p;
 
+// Delete every node that refer to other nodes 
 MATCH (p:Person)-[r:REFERS]->()
 DELETE r
 DELETE p;
@@ -175,9 +189,198 @@ MATCH p=()-->() DELETE p;
 //or
 MATCH p=() DELETE p;
 
+```
+
+## Movielens database queries 
+```xml
+
+CREATE CONSTRAINT ON (u:User) ASSERT u.userId IS UNIQUE;
+CREATE CONSTRAINT ON (m:Movie) ASSERT m.movieId IS UNIQUE;
+CREATE CONSTRAINT ON (g:Genre) ASSERT g.name IS UNIQUE;
+
+CREATE INDEX ON :Rating(userId);
+CREATE INDEX ON :Rating(movieId);
+
+//load predefined genres
+CREATE (: Genre {name: "Action"}),
+		(: Genre {name: "Adventure"}),
+		(: Genre {name: "Animation"}),
+		(: Genre {name: "Children's"}),
+		(: Genre {name: "Comedy"}),
+		(: Genre {name: "Crime"}),
+		(: Genre {name: "Documentary"}),
+		(: Genre {name: "Drama"}),
+		(: Genre {name: "Fantasy"}),
+		(: Genre {name: "Film-Noir"}),
+		(: Genre {name: "Horror"}),
+		(: Genre {name: "Musical"}),
+		(: Genre {name: "Mystery"}),
+		(: Genre {name: "Romance"}),
+		(: Genre {name: "Sci-Fi"}),
+		(: Genre {name: "Thriller"}),
+		(: Genre {name: "War"}),
+		(: Genre {name: "Western"});
+		
+
+// Data sets can be taken from the uploaded dataset folder 
+// Data sets must reside in the import folder of neo4j 
+
+//load movies
+USING PERIODIC COMMIT 100
+LOAD CSV WITH HEADERS FROM 'file:///movies.csv' AS line
+CREATE (m:Movie {movieId: toInteger(line.id)})
+SET m.title=line.title
+SET m.genres=line.genres;
+
+
+//load users
+USING PERIODIC COMMIT 1000
+LOAD CSV WITH HEADERS FROM 'file:///users.csv' AS line
+CREATE (u:User {userId: toInteger(line.id), age: line.age_group, gender: line.gender, occupation: line.occupation, zipCode: line.zip_code});
+
+
+//load rating and rating relationship
+USING PERIODIC COMMIT 10000 //without this line, we get an outofmemory exception
+LOAD CSV WITH HEADERS FROM 'file:///ratings.csv' AS line
+MATCH (m:Movie {movieId : toInteger(line.mId)})
+MATCH (u:User {userId: toInteger(line.uId)})
+CREATE (r:Rating {rate: toFloat(line.rate), ts: line.ts}),
+	   (u)-[:GAVE]->(r),
+       (r)-[:TO]->(m);
+
+
+//evolve the data to have a genre with relationship to the movie
+MATCH (movie:Movie)
+WHERE coalesce(movie.genres, "-") <> "-"
+WITH SPLIT(movie.genres, "|") as parts, movie as m
+UNWIND parts as x
+MATCH (g: Genre {name: x})
+MERGE (m)-[:IS_A]->(g)
+REMOVE m.genres;
+
+
+// Return the top x most rated movies
+MATCH (u:User)-[:GAVE]->(r:Rating)-[t:TO]->(m:Movie)
+WITH m.movieId as movieId, m.title as title, count(r) as count, AVG(r.rate) as avg_rate
+WHERE count > 2000
+RETURN movieId, title, count, avg_rate
+ORDER BY avg_rate DESC //which should we use? count or rating
+LIMIT 15;
+
+// Return other movies that belong to the same genre as movie x
+MATCH (m:Movie {movieId : 5})-[:IS_A]-(g)-[:IS_A]-(otherMovies)
+return m, g, otherMovies;
+
+
+// Return 10 most rated movies that were rated by other people who rated movie X positively
+MATCH (x:Movie {movieId : 122})<-[:TO]-(r)<-[:GAVE]-(u:User)
+WHERE r.rate > 3 
+WITH u as users
+MATCH (users)-[:GAVE]-(r)-[:TO]-(m:Movie)
+WITH m, AVG(r.rate) AS score, COUNT(r) AS scount
+ORDER BY score DESC, scount DESC
+RETURN m, score , scount
+LIMIT 10;
+
+//similar to the query above. We only removed the first WITH conjunction
+MATCH (x:Movie {movieId : 122})<-[:TO]-(xr:Rating)<-[:GAVE]-(us:User)-[:GAVE]->(r2:Rating)-[:TO]->(m:Movie)
+WHERE xr.rate > 3 
+WITH m, AVG(r2.rate) AS score, COUNT(r2) AS scount
+ORDER BY score DESC, scount DESC
+RETURN m, score, scount
+LIMIT 10;
+
+
+// Return 10 most rated movies by people like our user x
+MATCH (u:User {userId : 700})-[:GAVE]->(r)-[:TO]->(m:Movie)<-[:TO]-(r2)-[:GAVE]-(others:User)-[:GAVE]->(r3)-[:TO]->(m2:Movie)
+WHERE r.rate >= 3 AND r2.rate >=3 AND r3.rate >= 3 AND u.gender = others.gender and u.age=others.age 
+WITH m2 AS movie, AVG(r3.rate) AS score, count(r3)  AS ratings
+RETURN movie
+ORDER BY ratings DESC, score DESC
+LIMIT 10;
+
+
+// get the schema in your neo4j instance
+call db.schema(); -> Deprecated now with call db.schema.visualization;
+
+//use the apoc help function to find functions or procedures
+call apoc.help('path');
+
+
+
+//generate page rank score for all nodes in the person network
+CALL algo.pageRank.stream('Person', 'REFERS', {iterations:50, dampingFactor:0.95})
+YIELD nodeId, score
+CALL apoc.nodes.get(nodeId) YIELD node
+SET node.rankscore = score;
+
+//generate centrality score for all nodes in the person network
+CALL algo.closeness.stream('Person', 'REFERS')
+YIELD nodeId, centrality
+WITH algo.asNode(nodeId) AS node, centrality
+SET node.closecenterscore = centrality;
+
+
+//let us checkout our new state of network
+MATCH (p:Person) 
+RETURN p.id, p.firstname, p.lastame, p.gender, p.age, p.rankscore, p.closecenterscore;
+
+
+
+///////////////////////////////////////////////////
+////////////////  MOVIELENS
+//////////////////////////////////////////////////
+//what is common between two users.
+MATCH (u:User {userId: 2334}) 
+MATCH (v:User {userId: 1})
+CALL apoc.algo.dijkstra(u, v, 'GAVE|TO', 'weight', 1.0, 5) YIELD path, weight
+return path, weight;
+
+//similarity calculation using jaccard similarity function
+MATCH (u:User {userId: 2334})-[:GAVE]->()-[:TO]->(movies)
+WITH u, collect(id(movies)) AS user1Movies
+MATCH (v:User)-[:GAVE]->()-[:TO]->(movies2) WHERE v <> u
+WITH u, user1Movies, v, collect(id(movies2)) AS user2Movies2
+RETURN u.userId AS from,
+       v.userId AS to,
+       algo.similarity.jaccard(user1Movies, user2Movies2) AS similarity
+ORDER BY similarity DESC
+LIMIT 20;
+
 
 ```
 
+## Springboot project 
+```xml
+Check the appplication in folder neo4j-dataaccess
+Change the database access in application.properties file and run the springboot project
+Check the swagger url at http://localhost:8080/
+Or the swaggger url at http://localhost:8080/swagger-ui.html
+
+A more latest version of the project can be found in the following link:
+https://neo4j.com/developer/spring-data-neo4j/
+
+
+```
+
+
+## Graph Analytics
+```xml
+Search 
+Path-finding
+Community detection
+Propagation
+Centrality 
+Similarity 
+
+```
+
+## Recommended resource
+```xml
+Check the recommened resource to understard graph algorithm from the recommended resource section
+Title Graph Algorithms: Practical Examples in Apache Spark and Neo4j
+Authors: Mark Needham, Amy Hodler
+```
 
 
 
